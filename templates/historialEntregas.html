@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="historial-container">
+    <h1>Historial de Entregas</h1>
+    
+    {% if entregas %}
+    <div class="table-responsive">
+        <table class="table-historial">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>ID Pedido</th>
+                    <th>Empresa</th>
+                    <th>Descripción</th>
+                    <th>Dirección</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entrega in entregas %}
+                <tr>
+                    <td>{{ entrega[9].strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ entrega[0] }}</td>
+                    <td>{{ entrega[7] }}</td>
+                    <td>{{ entrega[1] }}</td>
+                    <td>{{ entrega[4] }}</td>
+                    <td>
+                        <span class="estado-{{ entrega[8]|lower|replace(' ', '-') }}">
+                            {{ entrega[8] }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <p>No hay entregas registradas.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

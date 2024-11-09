@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="solicitudes-container">
+    <div class="header-section">
+        <div class="header-main">
+            <h1><i class="fas fa-list"></i> Mis Solicitudes</h1>
+            <span class="solicitudes-count">
+                Total: {{ solicitudes|length }} solicitudes
+            </span>
+        </div>
+        <a href="{{ url_for('solicitud_nueva') }}" class="btn-add">
+            <i class="fas fa-plus"></i> Nueva Solicitud
+        </a>
+    </div>
+
+    {% if solicitudes %}
+    <div class="table-responsive">
+        <table class="table-solicitudes">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> ID</th>
+                    <th><i class="fas fa-calendar"></i> Fecha</th>
+                    <th><i class="fas fa-file-alt"></i> Descripción</th>
+                    <th><i class="fas fa-boxes"></i> Cantidad</th>
+                    <th><i class="fas fa-tag"></i> Precio</th>
+                    <th><i class="fas fa-map-marker-alt"></i> Dirección</th>
+                    <th><i class="fas fa-clock"></i> Entrega</th>
+                    <th><i class="fas fa-info-circle"></i> Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for solicitud in solicitudes %}
+                <tr>
+                    <td class="id-column">#{{ solicitud[0] }}</td>
+                    <td class="fecha-column">{{ solicitud[2].strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="descripcion-column">{{ solicitud[6] }}</td>
+                    <td class="cantidad-column">{{ solicitud[7] }}</td>
+                    <td class="precio-column">${{ "%.2f"|format(solicitud[8]) }}</td>
+                    <td class="direccion-column">{{ solicitud[9] }}</td>
+                    <td class="fecha-column">{{ solicitud[10].strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="estado-column">
+                        <span class="estado-{{ solicitud[11]|lower }}">
+                            {{ solicitud[11] }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <div class="no-data-content">
+            <i class="fas fa-inbox"></i>
+            <h3>No hay solicitudes registradas</h3>
+            <p>Comienza creando tu primera solicitud de envío</p>
+            <a href="{{ url_for('solicitud_nueva') }}" class="btn-add">
+                <i class="fas fa-plus"></i> Crear Primera Solicitud
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

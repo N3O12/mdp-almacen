@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="pedidos-container">
+    <div class="header-section">
+        <h1>Pedidos Pendientes</h1>
+        <div class="header-count">
+            Total: {{ pedidos|length }} pedidos
+        </div>
+    </div>
+
+    {% if pedidos %}
+    <div class="table-responsive">
+        <table class="table-pedidos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Empresa</th>
+                    <th>Descripción</th>
+                    <th>Dirección</th>
+                    <th>Fecha Entrega</th>
+                    <th>Asignar a</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td class="id-column">#{{ pedido[0] }}</td>
+                    <td class="empresa-column">{{ pedido[8] }}</td>
+                    <td class="descripcion-column">{{ pedido[2] }}</td>
+                    <td class="direccion-column">{{ pedido[5] }}</td>
+                    <td class="fecha-column">{{ pedido[6].strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="asignar-column">
+                        <form method="post" action="{{ url_for('pedido_asignar') }}" class="asignar-form">
+                            <input type="hidden" name="pedido_id" value="{{ pedido[0] }}">
+                            <div class="select-wrapper">
+                                <select name="trabajador_id" required class="trabajador-select">
+                                    <option value="">Seleccione trabajador</option>
+                                    {% for trabajador in trabajadores %}
+                                    <option value="{{ trabajador[0] }}">
+                                        {{ trabajador[1] }} ({{ trabajador[2] }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-asignar">Asignar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <div class="no-data-content">
+            <i class="fas fa-check-circle"></i>
+            <p>¡No hay pedidos pendientes por asignar!</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

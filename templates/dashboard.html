@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Panel de Control</h1>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h2>Pedidos por Estado</h2>
+            <table>
+                <tr>
+                    <th>Estado</th>
+                    <th>Total</th>
+                </tr>
+                {% for estado in pedidos_por_estado %}
+                <tr>
+                    <td>{{ estado[0]|title }}</td>
+                    <td>{{ estado[1] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>Trabajadores por Tipo</h2>
+            <table>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Total</th>
+                </tr>
+                {% for tipo in trabajadores_por_tipo %}
+                <tr>
+                    <td>{{ tipo[0]|title }}</td>
+                    <td>{{ tipo[1] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>Pedidos Completados</h2>
+            <table>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                </tr>
+                {% for dia in pedidos_por_dia %}
+                <tr>
+                    <td>{{ dia[0].strftime('%d/%m/%Y') }}</td>
+                    <td>{{ dia[1] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

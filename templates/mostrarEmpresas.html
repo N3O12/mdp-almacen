@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="empresas-container">
+    <h1>Empresas Registradas</h1>
+    
+    {% if session.rol == 'administrador' %}
+    <div class="actions-bar">
+        <a href="{{ url_for('empresa_registrar') }}" class="btn-add">Nueva Empresa</a>
+    </div>
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table-empresas">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    {% if session.rol == 'administrador' %}
+                    <th>Acciones</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for empresa in empresas %}
+                <tr>
+                    <td>{{ empresa[0] }}</td>
+                    <td>{{ empresa[1] }}</td>
+                    <td>{{ empresa[2] }}</td>
+                    <td>{{ empresa[3] }}</td>
+                    <td>{{ empresa[4] }}</td>
+                    {% if session.rol == 'administrador' %}
+                    <td class="actions">
+                        <a href="{{ url_for('empresa_modificar', id=empresa[0]) }}" 
+                           class="btn-edit">Editar</a>
+                        <form method="post" action="{{ url_for('empresa_eliminar', id=empresa[0]) }}"
+                              class="delete-form" onsubmit="return confirm('¿Está seguro?');">
+                            <button type="submit" class="btn-delete">Eliminar</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if not empresas %}
+    <div class="no-data">
+        No hay empresas registradas.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

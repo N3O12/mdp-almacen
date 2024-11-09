@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistema de Reparto</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-truck"></i>
+            <span>Sistema de Reparto</span>
+        </div>
+        
+        <button class="navbar-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="nav-menu">
+            <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                <i class="fas fa-home"></i> Inicio
+            </a>
+            
+            {% if session.usuario %}
+                {% if session.rol == 'administrador' %}
+                    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('pedidos_pendientes') }}" class="nav-link {% if request.endpoint == 'pedidos_pendientes' %}active{% endif %}">
+                        <i class="fas fa-clock"></i> Pedidos Pendientes
+                    </a>
+                    <a href="{{ url_for('historial_admin') }}" class="nav-link {% if request.endpoint == 'historial_admin' %}active{% endif %}">
+                        <i class="fas fa-history"></i> Historial
+                    </a>
+                {% elif session.rol == 'cliente' %}
+                    <a href="{{ url_for('solicitud_nueva') }}" class="nav-link {% if request.endpoint == 'solicitud_nueva' %}active{% endif %}">
+                        <i class="fas fa-plus-circle"></i> Nueva Solicitud
+                    </a>
+                    <a href="{{ url_for('solicitud_mostrar') }}" class="nav-link {% if request.endpoint == 'solicitud_mostrar' %}active{% endif %}">
+                        <i class="fas fa-list"></i> Mis Solicitudes
+                    </a>
+                {% elif session.rol == 'trabajador' %}
+                    <a href="{{ url_for('pedidos_asignados') }}" class="nav-link {% if request.endpoint == 'pedidos_asignados' %}active{% endif %}">
+                        <i class="fas fa-tasks"></i> Pedidos Asignados
+                    </a>
+                    <a href="{{ url_for('historial_entregas') }}" class="nav-link {% if request.endpoint == 'historial_entregas' %}active{% endif %}">
+                        <i class="fas fa-history"></i> Historial
+                    </a>
+                {% endif %}
+                
+                <div class="nav-divider"></div>
+                
+                <div class="user-menu">
+                    <span class="user-name">
+                        <i class="fas fa-user"></i> {{ session.usuario }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="nav-link logout-link">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </a>
+                </div>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </a>
+                <a href="{{ url_for('seleccionar_registro') }}" class="nav-link {% if request.endpoint == 'seleccionar_registro' %}active{% endif %}">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="contenido">
+        {% block contenido %}{% endblock %}
+    </div>
+
+    <script>
+        document.querySelector('.navbar-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

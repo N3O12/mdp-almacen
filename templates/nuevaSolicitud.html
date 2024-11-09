@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="solicitud-container">
+    <!-- Header mejorado -->
+    <div class="header-section">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-plus-circle"></i>
+                Nueva Solicitud de Envío
+            </h1>
+            <p class="header-description">Complete los detalles de su nuevo pedido</p>
+        </div>
+        <div class="empresa-badge">
+            <i class="fas fa-building"></i>
+            <span>{{ session.usuario }}</span>
+        </div>
+    </div>
+
+    <!-- Formulario con mejor diseño -->
+    <div class="form-card">
+        <form method="post" class="solicitud-form">
+            <!-- Sección de detalles principales -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Detalles del Pedido
+                </h2>
+                
+                <div class="form-group full-width">
+                    <label for="descripcion">
+                        <i class="fas fa-file-alt"></i>
+                        Descripción del pedido
+                    </label>
+                    <textarea 
+                        name="descripcion" 
+                        id="descripcion"
+                        required 
+                        placeholder="Describa detalladamente el contenido del pedido..."
+                        class="form-textarea"
+                    ></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cantidad">
+                            <i class="fas fa-boxes"></i>
+                            Cantidad
+                        </label>
+                        <input 
+                            type="number" 
+                            name="cantidad" 
+                            id="cantidad"
+                            required 
+                            min="1"
+                            placeholder="Número de items"
+                            class="form-input"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="precio">
+                            <i class="fas fa-tag"></i>
+                            Precio
+                        </label>
+                        <div class="price-input">
+                            <span class="currency">$</span>
+                            <input 
+                                type="number" 
+                                name="precio" 
+                                id="precio"
+                                step="0.01" 
+                                required
+                                placeholder="0.00"
+                                class="form-input"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de entrega -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-truck"></i>
+                    Detalles de Entrega
+                </h2>
+
+                <div class="form-group full-width">
+                    <label for="direccion">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Dirección de entrega
+                    </label>
+                    <input 
+                        type="text" 
+                        name="direccion" 
+                        id="direccion"
+                        required
+                        placeholder="Ingrese la dirección completa de entrega"
+                        class="form-input"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha_entrega">
+                        <i class="fas fa-calendar-alt"></i>
+                        Fecha y hora de entrega
+                    </label>
+                    <input 
+                        type="datetime-local" 
+                        name="fecha_entrega" 
+                        id="fecha_entrega"
+                        required
+                        class="form-input"
+                    >
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-paper-plane"></i>
+                    Crear Solicitud
+                </button>
+                <a href="{{ url_for('solicitud_mostrar') }}" class="btn-cancel">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
