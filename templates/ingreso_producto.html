@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Ingreso de Productos - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg border-0 rounded-lg">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <h4 class="mb-0 text-white">
+            <i class="fas fa-box-open me-2"></i>Ingreso de Productos
+        </h4>
+    </div>
+    
+    <div class="card-body bg-light">
+        {% if mensaje %}
+        <div class="alert alert-{{ tipo_mensaje }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i>{{ mensaje }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{{ url_for('ingreso_producto') }}" class="needs-validation" novalidate>
+            <div class="row g-4">
+                <!-- Nombre y Categoría -->
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" name="nombre" class="form-control custom-input" id="nombreProducto" required>
+                        <label for="nombreProducto">
+                            <i class="fas fa-tag me-2"></i>Nombre del Producto
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select name="categoria" class="form-select custom-select" id="categoriaProducto" required>
+                            <option value="">Seleccione una categoría</option>
+                            {% for categoria in categorias %}
+                            <option value="{{ categoria[0] }}">{{ categoria[1] }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="categoriaProducto">
+                            <i class="fas fa-folder me-2"></i>Categoría
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Cantidad, Unidad de Medida y Procedencia -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="number" step="0.01" name="cantidad" class="form-control custom-input" id="cantidadProducto" required>
+                        <label for="cantidadProducto">
+                            <i class="fas fa-cubes me-2"></i>Cantidad
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select name="unidad_medida" class="form-select custom-select" id="unidadMedida" required>
+                            <option value="">Seleccione unidad</option>
+                            {% for unidad in unidades_medida %}
+                            <option value="{{ unidad }}">
+                                {% if unidad == 'kg' %}Kilogramos
+                                {% elif unidad == 'l' %}Litros
+                                {% elif unidad == 'm' %}Metros
+                                {% elif unidad == 'g' %}Gramos
+                                {% elif unidad == 'ud' %}Unidades
+                                {% elif unidad == 'gal' %}Galones
+                                {% elif unidad == 'lb' %}Libras
+                                {% elif unidad == 'cm' %}Centímetros
+                                {% elif unidad == 'mm' %}Milímetros
+                                {% elif unidad == 'km' %}Kilómetros
+                                {% elif unidad == 'ml' %}Mililitros
+                                {% elif unidad == 'oz' %}Onzas
+                                {% elif unidad == 'm²' %}Metros cuadrados
+                                {% elif unidad == 'm³' %}Metros cúbicos
+                                {% elif unidad == 'mg' %}Miligramos
+                                {% elif unidad == 'dl' %}Decilitros
+                                {% elif unidad == 'cl' %}Centilitros
+                                {% elif unidad == 't' %}Toneladas
+                                {% elif unidad == 'pulg' %}Pulgadas
+                                {% elif unidad == 'mts' %}Metros
+                                {% elif unidad == 'u' %}Unidades
+                                {% elif unidad == 'min' %}Minutos
+                                {% elif unidad == 'h' %}Horas
+                                {% elif unidad == 'seg' %}Segundos
+                                {% elif unidad == 'ha' %}Hectáreas
+                                {% elif unidad == 'hl' %}Hectolitros
+                                {% elif unidad == 'qq' %}Quintales
+                                {% elif unidad == 'dam' %}Decámetros
+                                {% elif unidad == 'dm' %}Decímetros
+                                {% elif unidad == 'dcm' %}Decímetros cúbicos
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <label for="unidadMedida">
+                            <i class="fas fa-ruler me-2"></i>Unidad de Medida
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="text" name="procedencia" class="form-control custom-input" id="procedenciaProducto" required>
+                        <label for="procedenciaProducto">
+                            <i class="fas fa-map-marker-alt me-2"></i>Procedencia
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Descripción -->
+                <div class="col-12">
+                    <div class="form-floating">
+                        <textarea name="descripcion" class="form-control custom-input" id="descripcionProducto" style="height: 100px"></textarea>
+                        <label for="descripcionProducto">
+                            <i class="fas fa-align-left me-2"></i>Descripción
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Fecha de Ingreso -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="datetime-local" 
+                               name="fecha_ingreso" 
+                               class="form-control custom-input" 
+                               id="fechaIngreso"
+                               value="{{ now.strftime('%Y-%m-%dT%H:%M') }}"
+                               max="{{ now.strftime('%Y-%m-%dT%H:%M') }}"
+                               required>
+                        <label for="fechaIngreso">
+                            <i class="fas fa-calendar-alt me-2"></i>Fecha de Ingreso
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary btn-lg custom-button">
+                    <i class="fas fa-save me-2"></i>Registrar Producto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Estilos personalizados */
+.custom-input, .custom-select {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus, .custom-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+}
+
+.form-floating > label {
+    padding-left: 1rem;
+    color: var(--text-muted);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--primary-color);
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.custom-button {
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+}
+
+.alert {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card {
+    overflow: hidden;
+}
+
+.form-floating {
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .row.g-4 {
+        gap: 1rem !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card-header" style="background: linear-gradient(135deg, #dc3545, #b02a37);">
+            <h2 class="text-white mb-0">
+                <i class="fas fa-sign-out-alt me-2"></i>Solicitudes de Salida
+            </h2>
+        </div>
+        
+        <div class="card-body bg-light">
+            <!-- Filtros mejorados -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" id="searchInput" class="form-control custom-input" 
+                               placeholder="Buscar...">
+                        <label>Buscar por nombre, DNI o área</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="date" id="fechaInicio" class="form-control custom-input">
+                        <label>Fecha inicio</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="date" id="fechaFin" class="form-control custom-input">
+                        <label>Fecha fin</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-secondary w-100 h-100 custom-btn" onclick="clearFilters()">
+                        <i class="fas fa-sync-alt me-2"></i>Limpiar filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla mejorada -->
+            <div class="table-responsive">
+                <table class="table table-hover custom-table" id="solicitudesTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                            <th><i class="fas fa-hashtag me-2"></i>N° Salida</th>
+                            <th><i class="fas fa-user me-2"></i>Solicitante</th>
+                            <th><i class="fas fa-id-card me-2"></i>DNI</th>
+                            <th><i class="fas fa-phone me-2"></i>Teléfono</th>
+                            <th><i class="fas fa-building me-2"></i>Área Usuario</th>
+                            <th><i class="fas fa-box me-2"></i>Productos</th>
+                            <th><i class="fas fa-comment me-2"></i>Motivo</th>
+                            <th><i class="fas fa-clipboard-check me-2"></i>Observación</th>
+                            <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in solicitudes %}
+                        <tr data-fecha="{{ s[0].strftime('%Y-%m-%d') }}">
+                            <td>{{ s[0].strftime('%d/%m/%Y') }}</td>
+                            <td>{{ '%04d' % s[2] if s[2] else '----' }}</td>
+                            <td>{{ s[3] }}</td>
+                            <td>{{ s[4] }}</td>
+                            <td>{{ s[5] or 'No especificado' }}</td>
+                            <td>{{ s[6] or 'No especificado' }}</td>
+                            <td>{{ s[7] or 'No especificado' }}</td>
+                            <td>
+                                {# Extraer solo el motivo antes de "- Observación:" #}
+                                {% set motivo_completo = s[8] or '' %}
+                                {% if ' - Observación:' in motivo_completo %}
+                                    {{ motivo_completo.split(' - Observación:')[0] }}
+                                {% else %}
+                                    {{ motivo_completo or 'No especificado' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {# Extraer solo la observación después de "- Observación:" #}
+                                {% set motivo_completo = s[8] or '' %}
+                                {% if ' - Observación:' in motivo_completo %}
+                                    {{ motivo_completo.split(' - Observación:')[1].strip() }}
+                                {% else %}
+                                    {{ s[9].strip() if s[9] else 'Ninguna' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('descargar_solicitud_salida', id_salida=s[1]) }}" 
+                                   class="btn btn-sm btn-danger">
+                                    <i class="fas fa-download"></i> Descargar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-input {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.25);
+}
+
+.custom-btn {
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.custom-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.custom-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.custom-table thead {
+    background: linear-gradient(135deg, #f8f9fc, #f1f3f9);
+}
+
+.custom-table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(220,53,69,0.05);
+    transform: scale(1.01);
+}
+
+.form-floating label {
+    padding: 0.75rem;
+}
+
+#resultsCounter {
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #fff5f5, #ffe3e3);
+    color: #dc3545;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .custom-btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+    const table = document.getElementById('solicitudesTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    function filterTable() {
+        const searchText = searchInput.value.toLowerCase();
+        const startDate = fechaInicio.value ? new Date(fechaInicio.value) : null;
+        const endDate = fechaFin.value ? new Date(fechaFin.value) : null;
+
+        Array.from(rows).forEach(row => {
+            const rowDate = new Date(row.dataset.fecha);
+            const solicitante = row.cells[2].textContent.toLowerCase();
+            const dni = row.cells[3].textContent.toLowerCase();
+            const area = row.cells[5].textContent.toLowerCase();
+            const productos = row.cells[6].textContent.toLowerCase();
+            const motivo = row.cells[7].textContent.toLowerCase();
+            
+            // Búsqueda en múltiples campos
+            const matchesSearch = !searchText || 
+                solicitante.includes(searchText) || 
+                dni.includes(searchText) || 
+                area.includes(searchText) ||
+                productos.includes(searchText) ||
+                motivo.includes(searchText);
+
+            // Verificación de rango de fechas
+            const matchesDate = (!startDate || rowDate >= startDate) && 
+                              (!endDate || rowDate <= endDate);
+            
+            row.style.display = (matchesSearch && matchesDate) ? '' : 'none';
+        });
+
+        updateResults();
+    }
+
+    // Función para actualizar contador de resultados
+    function updateResults() {
+        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
+        const totalRows = rows.length;
+        
+        // Eliminar contador anterior si existe
+        const existingCounter = document.getElementById('resultsCounter');
+        if (existingCounter) existingCounter.remove();
+        
+        // Crear nuevo contador
+        const counter = document.createElement('div');
+        counter.id = 'resultsCounter';
+        counter.className = 'alert alert-info mt-2';
+        counter.textContent = `Mostrando ${visibleRows} de ${totalRows} registros`;
+        
+        table.parentNode.insertBefore(counter, table);
+    }
+
+    // Event listeners para los filtros
+    searchInput.addEventListener('input', filterTable);
+    fechaInicio.addEventListener('change', filterTable);
+    fechaFin.addEventListener('change', filterTable);
+
+    // Validación de fechas
+    fechaInicio.addEventListener('change', function() {
+        if (fechaFin.value && this.value > fechaFin.value) {
+            alert('La fecha de inicio no puede ser posterior a la fecha fin');
+            this.value = '';
+        }
+    });
+
+    fechaFin.addEventListener('change', function() {
+        if (fechaInicio.value && this.value < fechaInicio.value) {
+            alert('La fecha fin no puede ser anterior a la fecha inicio');
+            this.value = '';
+        }
+    });
+});
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('fechaInicio').value = '';
+    document.getElementById('fechaFin').value = '';
+    
+    const table = document.getElementById('solicitudesTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    Array.from(rows).forEach(row => {
+        row.style.display = '';
+    });
+
+    // Eliminar contador de resultados
+    const counter = document.getElementById('resultsCounter');
+    if (counter) counter.remove();
+}
+</script>
+{% endblock %}

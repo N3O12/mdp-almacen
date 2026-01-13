@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Donación - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-gift me-2"></i>Confirmar Donación</h4>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('procesar_donacion') }}" method="POST">
+            <div class="row mb-4">
+                <!-- Información del Solicitante -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Solicitante</label>
+                        <input type="text" name="nombre_solicitante" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Apellidos del Solicitante</label>
+                        <input type="text" name="apellidos_solicitante" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">DNI</label>
+                        <input type="text" name="dni" class="form-control" required 
+                               pattern="[0-9]{8}" maxlength="8">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono del solicitante</label>
+                        <input type="text" name="telefono_solicitante" class="form-control" required>
+                    </div>
+                </div>
+                
+                <!-- Información de la Donación -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Salida</label>
+                        <input type="datetime-local" name="fecha_salida" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora de Salida</label>
+                        <input type="time" name="hora_salida" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Autorizado por</label>
+                        <input type="text" name="autorizado_por" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observación de Autorización</label>
+                        <textarea name="observacion_autorizacion" class="form-control" rows="2" 
+                                placeholder="Ej: Autorizado por el regidor de obras"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de productos -->
+            <div class="table-responsive mb-4">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Stock Disponible</th>
+                            <th>Cantidad a Donar</th>
+                            <th>Observación del Producto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto.nombre }}</td>
+                            <td>{{ producto.cantidad }} {{ producto.unidad_medida }}</td>
+                            <td>
+                                <input type="number" name="cantidad_{{ producto.id_producto }}" 
+                                       class="form-control" required
+                                       min="0.01" max="{{ producto.cantidad }}" step="0.01">
+                                <input type="hidden" name="productos[]" value="{{ producto.id_producto }}">
+                            </td>
+                            <td>
+                                <input type="text" name="observacion_producto_{{ producto.id_producto }}" 
+                                       class="form-control" 
+                                       placeholder="Observación específica del producto">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Motivo de donación -->
+            <div class="mb-4">
+                <label class="form-label">Motivo de donación</label>
+                <textarea name="motivo_donacion" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="text-end">
+                <a href="{{ url_for('donacion') }}" class="btn btn-secondary me-2">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check me-2"></i>Confirmar Donación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Agregar el modal de confirmación antes del script -->
+<div class="modal fade" id="confirmacionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-gift me-2"></i>Confirmar Donación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-3">Por favor, revise los datos antes de confirmar:</h6>
+                
+                <!-- Datos del Solicitante -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Datos del Solicitante</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Nombre:</strong> <span id="preview-nombre"></span></p>
+                                <p><strong>DNI:</strong> <span id="preview-dni"></span></p>
+                                <p><strong>Teléfono:</strong> <span id="preview-telefono"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Fecha:</strong> <span id="preview-fecha"></span></p>
+                                <p><strong>Hora:</strong> <span id="preview-hora"></span></p>
+                                <p><strong>Autorizado por:</strong> <span id="preview-autorizado"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Productos a Donar -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Productos a Donar</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Observación</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="preview-productos">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información Adicional -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Información Adicional</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Motivo de Donación:</strong> <span id="preview-motivo"></span></p>
+                        <p><strong>Observación de Autorización:</strong> <span id="preview-observacion"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarDonacion">
+                    <i class="fas fa-check me-2"></i>Confirmar Donación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer fecha y hora actual por defecto
+    const now = new Date();
+    const fechaInput = document.querySelector('input[name="fecha_salida"]');
+    const horaInput = document.querySelector('input[name="hora_salida"]');
+    
+    // Formato YYYY-MM-DDThh:mm
+    const fechaActual = now.toISOString().slice(0,16);
+    fechaInput.value = fechaActual;
+    
+    // Formato HH:mm
+    const horaActual = now.toTimeString().slice(0,5);
+    horaInput.value = horaActual;
+
+    // Modificar el evento submit del formulario
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Actualizar la previsualización
+        document.getElementById('preview-nombre').textContent = 
+            `${form.nombre_solicitante.value} ${form.apellidos_solicitante.value}`;
+        document.getElementById('preview-dni').textContent = form.dni.value;
+        document.getElementById('preview-telefono').textContent = form.telefono_solicitante.value;
+        document.getElementById('preview-fecha').textContent = form.fecha_salida.value;
+        document.getElementById('preview-hora').textContent = form.hora_salida.value;
+        document.getElementById('preview-autorizado').textContent = form.autorizado_por.value;
+        
+        // Productos
+        const productosTable = document.getElementById('preview-productos');
+        productosTable.innerHTML = '';
+        const productos = document.querySelectorAll('table tbody tr');
+        productos.forEach(producto => {
+            const nombre = producto.cells[0].textContent;
+            const cantidad = producto.querySelector('input[type="number"]').value;
+            const observacion = producto.querySelector('input[type="text"]').value;
+            
+            if (parseFloat(cantidad) > 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${nombre}</td>
+                    <td>${cantidad}</td>
+                    <td>${observacion || '-'}</td>
+                `;
+                productosTable.appendChild(tr);
+            }
+        });
+        
+        document.getElementById('preview-motivo').textContent = form.motivo_donacion.value;
+        document.getElementById('preview-observacion').textContent = 
+            form.observacion_autorizacion.value || 'Ninguna';
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
+        modal.show();
+    });
+
+    // Manejar la confirmación
+    document.getElementById('btnConfirmarDonacion').addEventListener('click', function() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmacionModal'));
+        modal.hide();
+        form.submit();
+        setTimeout(function() {
+            window.location.href = "{{ url_for('index') }}";
+        }, 1000);
+    });
+});
+</script>
+{% endblock %}

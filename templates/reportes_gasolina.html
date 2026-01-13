@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes de Gasolina - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card-header" style="background: linear-gradient(135deg, #4e73df, #224abe);">
+            <div class="d-flex justify-content-between align-items-center py-2">
+                <h4 class="mb-0 text-white">
+                    <i class="fas fa-gas-pump me-2"></i>Reportes de Gasolina
+                </h4>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('generar_reporte_combustible', tipo='gasolina', formato='excel') }}" 
+                       class="btn btn-success btn-sm custom-btn">
+                        <i class="fas fa-file-excel me-2"></i>Exportar Excel
+                    </a>
+                    <a href="{{ url_for('reportes') }}" class="btn btn-light btn-sm custom-btn">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body bg-light">
+            <!-- Filtros mejorados -->
+            <div class="row mb-4 g-3">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="date" id="fechaInicio" class="form-control custom-input">
+                        <label>Fecha Inicio</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="date" id="fechaFin" class="form-control custom-input">
+                        <label>Fecha Fin</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="text" id="searchInput" class="form-control custom-input" 
+                               placeholder="Buscar...">
+                        <label>Buscar por nombre, DNI, placa o N° de vale</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-secondary w-100 h-100 custom-btn" onclick="clearFilters()">
+                        <i class="fas fa-sync-alt me-2"></i>Limpiar
+                    </button>
+                </div>                          
+            </div>
+
+            <!-- Tabla mejorada -->
+            <div class="table-responsive">
+                <table class="table table-hover custom-table" id="gasolinaTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                            <th><i class="fas fa-hashtag me-2"></i>N° Vale</th>
+                            <th><i class="fas fa-user me-2"></i>Responsable</th>
+                            <th><i class="fas fa-id-card me-2"></i>DNI</th>
+                            <th><i class="fas fa-car me-2"></i>Placa</th>
+                            <th><i class="fas fa-gas-pump me-2"></i>Tipo</th>
+                            <th><i class="fas fa-tachometer-alt me-2"></i>Cantidad</th>
+                            <th><i class="fas fa-user-check me-2"></i>Autorizado por</th>
+                            <th><i class="fas fa-file me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in registros %}
+                        <tr data-fecha="{{ registro.fecha_formato }}">
+                            <td>{{ registro.fecha_salida.strftime('%d/%m/%Y') }}</td>
+                            <td>G-{{ '%04d' % registro.numero_vale }}-{{ registro.año_vale }}</td>
+                            <td>{{ registro.responsable }}</td>
+                            <td>{{ registro.dni }}</td>
+                            <td>{{ registro.placa_unidad }}</td>
+                            <td>{{ registro.tipo_combustible }}</td>
+                            <td>{{ registro.cantidad }} GAL</td>
+                            <td>{{ registro.autorizado_por }}</td>
+                            <td>
+                                <a href="{{ url_for('generar_reporte_combustible', tipo='gasolina', formato='word_salida', id_salida=registro.id_salida) }}" 
+                                   class="btn btn-sm btn-info"
+                                   target="_blank">
+                                    <i class="fas fa-file-word me-1"></i> Vale G-{{ '%04d' % registro.numero_vale }}-{{ registro.año_vale }}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-input {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.25);
+}
+
+.custom-btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.custom-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.custom-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.custom-table thead {
+    background: linear-gradient(135deg, #f8f9fc, #f1f3f9);
+}
+
+.custom-table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #4e73df;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(78,115,223,0.05);
+    transform: scale(1.01);
+}
+
+.form-floating label {
+    padding: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .custom-btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+    const table = document.getElementById('gasolinaTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    // Función para aplicar todos los filtros
+    function aplicarFiltros() {
+        const searchText = searchInput.value.toLowerCase();
+        const fechaInicioVal = fechaInicio.value;
+        const fechaFinVal = fechaFin.value;
+
+        Array.from(rows).forEach(row => {
+            const fecha = row.getAttribute('data-fecha');
+            const vale = row.cells[1].textContent.toLowerCase();
+            const responsable = row.cells[2].textContent.toLowerCase();
+            const dni = row.cells[3].textContent.toLowerCase();
+            const placa = row.cells[4].textContent.toLowerCase();
+            
+            // Filtro de búsqueda
+            const matchesSearch = !searchText || 
+                                vale.includes(searchText) || 
+                                responsable.includes(searchText) || 
+                                dni.includes(searchText) ||
+                                placa.includes(searchText);
+            
+            // Filtro de fechas
+            const matchesFecha = (!fechaInicioVal || fecha >= fechaInicioVal) && 
+                               (!fechaFinVal || fecha <= fechaFinVal);
+            
+            row.style.display = (matchesSearch && matchesFecha) ? '' : 'none';
+        });
+    }
+
+    // Event listeners
+    searchInput.addEventListener('keyup', aplicarFiltros);
+    fechaInicio.addEventListener('change', aplicarFiltros);
+    fechaFin.addEventListener('change', aplicarFiltros);
+
+    // Agregar manejador para los enlaces de descarga
+    const downloadLinks = document.querySelectorAll('a[href*="word_salida"]');
+    downloadLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch(this.href)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = this.download || 'vale_gasolina.docx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                })
+                .catch(error => {
+                    console.error('Error en la descarga:', error);
+                    alert('Error al descargar el documento');
+                });
+        });
+    });
+});
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('fechaInicio').value = '';
+    document.getElementById('fechaFin').value = '';
+    
+    Array.from(document.getElementById('gasolinaTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr')).forEach(row => {
+        row.style.display = '';
+    });
+}
+</script>
+{% endblock %} 

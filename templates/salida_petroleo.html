@@ -1,0 +1,386 @@
+    {% extends "base.html" %}
+
+    {% block title %}Salida de Petróleo - Almacén{% endblock %}
+
+    {% block content %}
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-lg border-0 rounded-lg">
+                    <div class="card-header" style="background: linear-gradient(135deg, #343a40, #1a1e21);">
+                        <h4 class="mb-0 text-white">
+                            <i class="fas fa-oil-can me-2"></i>Registro de Salida de Petróleo
+                        </h4>
+                    </div>
+                    <div class="card-body bg-light">
+                        <form method="POST" action="{{ url_for('salida_petroleo') }}" class="needs-validation" novalidate>
+                            <!-- Sección de Datos del Solicitante -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-dark bg-opacity-10">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user me-2"></i>Datos del Solicitante
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="nombreSolicitante" name="nombre_solicitante" required>
+                                                <label for="nombreSolicitante">Nombre del Solicitante</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="apellidoSolicitante" name="apellido_solicitante" required>
+                                                <label for="apellidoSolicitante">Apellidos del Solicitante</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="dni" name="dni" required maxlength="8" pattern="[0-9]{8}">
+                                                <label for="dni">DNI</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="autorizadoPor" name="autorizado_por" required>
+                                                <label for="autorizadoPor">Autorizado por</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control custom-input" 
+                                                       id="fechaSalida" name="fecha_salida" value="{{ fecha_actual }}" required>
+                                                <label for="fechaSalida">Fecha de Salida</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="time" class="form-control custom-input" 
+                                                       id="horaSalida" name="hora_salida" value="{{ hora_actual }}" required>
+                                                <label for="horaSalida">Hora de Salida</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Vehículo -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-dark bg-opacity-10">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-truck me-2"></i>Datos del Vehículo
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="placa" name="placa" required>
+                                                <label for="placa">Placa de movilidad</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Combustible -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-dark bg-opacity-10">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-oil-can me-2"></i>Detalles del Combustible
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="form-floating">
+                                                <select class="form-select custom-input" id="productoSelect" name="id_producto" required>
+                                                    <option value="">Seleccione un producto</option>
+                                                    {% for producto in productos %}
+                                                        <option value="{{ producto.id_producto }}" 
+                                                                data-stock="{{ producto.cantidad }}"
+                                                                data-unidad="{{ producto.unidad_medida }}">
+                                                            {{ producto.codigo }} - {{ producto.nombre }} (Stock: {{ producto.cantidad }} {{ producto.unidad_medida }})
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="productoSelect">Producto</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-floating">
+                                                <input type="number" class="form-control custom-input" 
+                                                       id="cantidad" name="cantidad" step="0.01" min="0.01" required>
+                                                <label for="cantidad">Cantidad</label>
+                                            </div>
+                                            <small class="text-muted" id="stockDisponible"></small>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-floating">
+                                                <select class="form-select custom-input" id="areaSelect" name="area" required>
+                                                    <option value="">Seleccione un área</option>
+                                                    {% if areas %}
+                                                        {% for area in areas %}
+                                                            <option value="{{ area.area }}">{{ area.area }}</option>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    <option value="nueva">+ Agregar Nueva Área</option>
+                                                </select>
+                                                <label for="areaSelect">Área Usuaria</label>
+                                            </div>
+                                            <div id="nuevaAreaDiv" style="display: none;" class="mt-2">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control custom-input" id="nuevaArea" placeholder="Ingrese nueva área">
+                                                    <button type="button" class="btn btn-success" id="btnGuardarArea">
+                                                        <i class="fas fa-save"></i> Guardar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Motivo, Destino y Observación -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-dark bg-opacity-10">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>Motivo, Destino y Observación
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="motivoSalida" name="motivo_salida" required>
+                                                <label for="motivoSalida">Motivo de Salida</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="destino" name="destino" required>
+                                                <label for="destino">Destino</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control custom-input" 
+                                                       id="observacion" name="observacion">
+                                                <label for="observacion">Observación</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botones de acción -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{{ url_for('index') }}" class="btn btn-light btn-lg px-4">
+                                    <i class="fas fa-arrow-left me-2"></i>Volver
+                                </a>
+                                <button type="submit" class="btn btn-dark btn-lg px-4">
+                                    <i class="fas fa-save me-2"></i>Registrar Salida
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .custom-input {
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .custom-input:focus {
+        border-color: var(--dark);
+        box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.15);
+    }
+
+    .form-floating > label {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .form-select {
+        border-radius: 8px;
+    }
+
+    .form-select:focus {
+        border-color: var(--dark);
+        box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const areaSelect = document.getElementById('areaSelect');
+        const nuevaAreaDiv = document.getElementById('nuevaAreaDiv');
+        const nuevaAreaInput = document.getElementById('nuevaArea');
+        const btnGuardarArea = document.getElementById('btnGuardarArea');
+        const productoSelect = document.getElementById('productoSelect');
+        const cantidadInput = document.getElementById('cantidad');
+        const stockDisponible = document.getElementById('stockDisponible');
+
+        // Manejar cambio en select de área
+        areaSelect.addEventListener('change', function() {
+            if (this.value === 'nueva') {
+                nuevaAreaDiv.style.display = 'block';
+                nuevaAreaInput.focus();
+                this.required = false;
+            } else {
+                nuevaAreaDiv.style.display = 'none';
+                this.required = true;
+            }
+        });
+
+        // Manejar guardado de nueva área
+        btnGuardarArea.addEventListener('click', function() {
+            const nuevaArea = nuevaAreaInput.value.trim().toUpperCase();
+            if (nuevaArea) {
+                fetch('/agregar_area', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ area: nuevaArea })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Agregar la nueva área al select
+                        const option = new Option(nuevaArea, nuevaArea);
+                        // Insertar antes de la opción "Agregar Nueva Área"
+                        areaSelect.insertBefore(option, areaSelect.lastChild);
+                        // Seleccionar la nueva área
+                        areaSelect.value = nuevaArea;
+                        // Limpiar y ocultar el div de nueva área
+                        nuevaAreaInput.value = '';
+                        nuevaAreaDiv.style.display = 'none';
+                        areaSelect.required = true;
+                        alert('Área agregada correctamente');
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al guardar el área');
+                });
+            } else {
+                alert('Por favor ingrese un nombre de área');
+            }
+        });
+
+        // Actualizar stock disponible cuando se selecciona un producto
+        productoSelect.addEventListener('change', function() {
+            const selectedOption = this.selectedOptions[0];
+            if (selectedOption.value) {
+                const stock = parseFloat(selectedOption.dataset.stock);
+                const unidad = selectedOption.dataset.unidad;
+                stockDisponible.textContent = `Stock disponible: ${stock} ${unidad}`;
+                cantidadInput.max = stock;
+                
+                if (parseFloat(cantidadInput.value) > stock) {
+                    cantidadInput.value = stock;
+                }
+            } else {
+                stockDisponible.textContent = '';
+                cantidadInput.removeAttribute('max');
+            }
+        });
+
+        // Validar cantidad al escribir
+        cantidadInput.addEventListener('input', function() {
+            const selectedOption = productoSelect.selectedOptions[0];
+            if (selectedOption.value) {
+                const stock = parseFloat(selectedOption.dataset.stock);
+                const cantidad = parseFloat(this.value) || 0;
+                
+                if (cantidad > stock) {
+                    alert(`La cantidad no puede superar el stock disponible (${stock})`);
+                    this.value = stock;
+                } else if (cantidad <= 0) {
+                    this.value = '';
+                }
+            }
+        });
+
+        // Manejar envío del formulario
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Enviar el formulario
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob().then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = response.headers.get('content-disposition')?.split('filename=')[1] || 'documento.docx';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        // Redirigir al index después de la descarga
+                        setTimeout(() => {
+                            window.location.href = "{{ url_for('index') }}";
+                        }, 1000);
+                    });
+                } else {
+                    throw new Error('Error al procesar la solicitud');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la solicitud');
+            });
+        });
+    });
+    </script>
+    {% endblock %}

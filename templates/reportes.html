@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Sección de Reportes Generales -->
+    <div class="card mb-4 shadow-lg border-0">
+        <div class="card-header" style="background: linear-gradient(135deg, #4e73df, #224abe);">
+            <h4 class="mb-0 text-white"><i class="fas fa-file-excel me-2"></i>Reportes Generales</h4>
+        </div>
+        <div class="card-body bg-light">
+            <div class="row g-4">
+                <!-- Inventario Actual -->
+                <div class="col-md-6">
+                    <div class="report-card primary">
+                        <div class="card-body text-center">
+                            <div class="icon-circle">
+                                <i class="fas fa-boxes fa-2x"></i>
+                            </div>
+                            <h5 class="card-title mt-4">Inventario Actual</h5>
+                            <p class="card-text">Estado actual del almacén y stock disponible</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('descargar_inventario') }}" class="btn btn-primary custom-button">
+                                    <i class="fas fa-download me-2"></i>Descargar Reporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Préstamos Activos -->
+                <div class="col-md-6">
+                    <div class="report-card success">
+                        <div class="card-body text-center">
+                            <div class="icon-circle">
+                                <i class="fas fa-hand-holding fa-2x"></i>
+                            </div>
+                            <h5 class="card-title mt-4">Préstamos Activos</h5>
+                            <p class="card-text">Registro de materiales prestados actualmente</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('descargar_prestamos') }}" class="btn btn-success custom-button">
+                                    <i class="fas fa-download me-2"></i>Descargar Reporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial de Movimientos -->
+                <div class="col-md-6">
+                    <div class="report-card info">
+                        <div class="card-body text-center">
+                            <div class="icon-circle">
+                                <i class="fas fa-history fa-2x"></i>
+                            </div>
+                            <h5 class="card-title mt-4">Historial de Movimientos</h5>
+                            <p class="card-text">Registro completo de entradas y salidas</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('descargar_historial') }}" class="btn btn-info custom-button text-white">
+                                    <i class="fas fa-download me-2"></i>Descargar Reporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Productos Agotados -->
+                <div class="col-md-6">
+                    <div class="report-card warning">
+                        <div class="card-body text-center">
+                            <div class="icon-circle">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <h5 class="card-title mt-4">Productos Agotados</h5>
+                            <p class="card-text">Lista de productos sin stock disponible</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('descargar_agotados') }}" class="btn btn-warning custom-button text-white">
+                                    <i class="fas fa-download me-2"></i>Descargar Reporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Combustibles -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0"><i class="fas fa-gas-pump me-2"></i>Reportes de Combustible</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Gasolina -->
+                <div class="col-md-6">
+                    <div class="card h-100 border-primary hover-shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-gas-pump me-2"></i>Gasolina
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Gestione y visualice los reportes de gasolina.</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('reportes_gasolina') }}" class="btn btn-primary">
+                                    <i class="fas fa-file-alt me-2"></i>Ver Reportes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Petróleo -->
+                <div class="col-md-6">
+                    <div class="card h-100 border-dark hover-shadow">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-oil-can me-2"></i>Petróleo
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Gestione y visualice los reportes de petróleo.</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('reportes_petroleo') }}" class="btn btn-dark">
+                                    <i class="fas fa-file-alt me-2"></i>Ver Reportes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Solicitudes -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Gestión de Solicitudes</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Solicitudes de Préstamo -->
+                <div class="col-md-6">
+                    <div class="card h-100 border-primary hover-shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-file-contract me-2"></i>Solicitudes de Préstamo
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Gestione y visualice el historial de solicitudes de préstamo.</p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('solicitudes_prestamo') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-eye me-2"></i>Ver Solicitudes
+                                </a>
+                                <a href="{{ url_for('descargar_prestamos') }}" class="btn btn-primary">
+                                    <i class="fas fa-download me-2"></i>Descargar Reporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solicitudes de Salida -->
+                <div class="col-md-6">
+                    <div class="card h-100 border-danger hover-shadow">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-file-export me-2"></i>Solicitudes de Salida
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Gestione y visualice el historial de solicitudes de salida.</p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('solicitudes_salida') }}" class="btn btn-outline-danger">
+                                    <i class="fas fa-eye me-2"></i>Ver Solicitudes
+                                </a>
+                                <a href="{{ url_for('descargar_salidas') }}" class="btn btn-danger">
+                                    <i class="fas fa-download me-2"></i>Descargar Reporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donaciones -->
+                <div class="col-md-6">
+                    <div class="card h-100 border-success hover-shadow">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-gift me-2"></i>Registro de Donaciones
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Gestione y visualice el historial de donaciones realizadas.</p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('solicitudes_donacion') }}" class="btn btn-outline-success">
+                                    <i class="fas fa-eye me-2"></i>Ver Donaciones
+                                </a>
+                                <a href="{{ url_for('descargar_donaciones') }}" class="btn btn-success">
+                                    <i class="fas fa-download me-2"></i>Descargar Reporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos mejorados manteniendo la estructura */
+.report-card {
+    background: white;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    height: 100%;
+    overflow: hidden;
+}
+
+.report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(78,115,223,0.1), rgba(34,74,190,0.1));
+    color: var(--primary);
+}
+
+.report-card:hover .icon-circle {
+    transform: scale(1.1) rotate(10deg);
+}
+
+.custom-button {
+    border-radius: 10px;
+    padding: 0.8rem 1.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    font-weight: 500;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    padding: 1.5rem;
+    border: none;
+}
+
+/* Variantes de colores para las cards */
+.report-card.primary .icon-circle {
+    background: linear-gradient(135deg, rgba(78,115,223,0.1), rgba(34,74,190,0.1));
+    color: #4e73df;
+}
+
+.report-card.success .icon-circle {
+    background: linear-gradient(135deg, rgba(28,200,138,0.1), rgba(19,133,92,0.1));
+    color: #1cc88a;
+}
+
+.report-card.info .icon-circle {
+    background: linear-gradient(135deg, rgba(54,185,204,0.1), rgba(41,140,155,0.1));
+    color: #36b9cc;
+}
+
+.report-card.warning .icon-circle {
+    background: linear-gradient(135deg, rgba(246,194,62,0.1), rgba(221,162,10,0.1));
+    color: #f6c23e;
+}
+
+/* Mantener los estilos existentes */
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-header {
+    border-bottom: 0;
+}
+
+.btn i {
+    transition: transform 0.3s ease;
+}
+
+.btn:hover i {
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .custom-button {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer fechas máximas como hoy
+    const hoy = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[type="date"]').forEach(input => {
+        input.max = hoy;
+    });
+    
+    // Validar rangos de fechas
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const fechaInicio = this.querySelector('input[name="fecha_inicio"]');
+            const fechaFin = this.querySelector('input[name="fecha_fin"]');
+            
+            if (fechaInicio && fechaFin && fechaInicio.value && fechaFin.value) {
+                if (fechaInicio.value > fechaFin.value) {
+                    e.preventDefault();
+                    alert('La fecha de inicio no puede ser posterior a la fecha final');
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

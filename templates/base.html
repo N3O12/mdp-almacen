@@ -1,83 +1,337 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Sistema de Reparto</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Nueva paleta de colores más moderna */
+            --primary-color: #2C3E50;      /* Azul oscuro elegante */
+            --secondary-color: #34495E;     /* Azul grisáceo */
+            --accent-color: #3498DB;        /* Azul brillante */
+            --success-color: #2ECC71;       /* Verde vibrante */
+            --warning-color: #F1C40F;       /* Amarillo */
+            --danger-color: #E74C3C;        /* Rojo */
+            --light-color: #ECF0F1;         /* Gris muy claro */
+            --hover-color: rgba(236, 240, 241, 0.15);
+            --text-light: #FFFFFF;
+            --text-dark: #2C3E50;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--light-color);
+        }
+
+        /* Navbar Mejorado */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 0.8rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-light) !important;
+            padding: 8px 20px;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-brand i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .navbar-brand:hover {
+            background: var(--hover-color);
+            transform: translateY(-1px);
+        }
+
+        /* Enlaces de Navegación */
+        .nav-link {
+            color: var(--text-light) !important;
+            padding: 8px 16px !important;
+            margin: 0 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: var(--hover-color);
+            transform: translateY(-1px);
+        }
+
+        .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        /* Menús Desplegables */
+        .dropdown-menu {
+            background: var(--text-light);
+            border: none;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border-radius: 12px;
+            padding: 0.8rem 0;
+            margin-top: 12px;
+            animation: dropdownFadeIn 0.3s ease;
+        }
+
+        .dropdown-item {
+            padding: 10px 24px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .dropdown-item i {
+            margin-right: 10px;
+            color: var(--accent-color);
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown-item:hover {
+            background: var(--light-color);
+            color: var(--primary-color);
+            padding-left: 28px;
+        }
+
+        /* Iconos específicos por tipo */
+        .dropdown-item i.fa-hand-holding { color: var(--success-color); }
+        .dropdown-item i.fa-undo { color: var(--warning-color); }
+        .dropdown-item i.fa-sign-out-alt { color: var(--danger-color); }
+        .dropdown-item i.fa-gas-pump { color: var(--accent-color); }
+        .dropdown-item i.fa-gift { color: var(--success-color); }
+
+        /* Animaciones */
+        @keyframes dropdownFadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* Contenedor Principal */
+        .container.py-4 {
+            background: var(--text-light);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 2rem !important;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .navbar-collapse {
+                background: rgba(255,255,255,0.02);
+                border-radius: 12px;
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+
+            .dropdown-menu {
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .dropdown-item {
+                color: var(--text-light);
+            }
+
+            .dropdown-item:hover {
+                background: var(--hover-color);
+                color: var(--text-light);
+            }
+        }
+
+        /* Botón Toggle */
+        .navbar-toggler {
+            border: 2px solid rgba(255,255,255,0.1);
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggler:hover {
+            background: var(--hover-color);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        /* Efectos hover mejorados */
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--accent-color);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 80%;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <i class="fas fa-truck"></i>
-            <span>Sistema de Reparto</span>
-        </div>
-        
-        <button class="navbar-toggle">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <div class="nav-menu">
-            <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
-                <i class="fas fa-home"></i> Inicio
+    {% if session.usuario %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            {% if session.rol == 'admin' %}
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-warehouse"></i> Almacén
             </a>
-            
-            {% if session.usuario %}
-                {% if session.rol == 'administrador' %}
-                    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
-                        <i class="fas fa-chart-line"></i> Dashboard
-                    </a>
-                    <a href="{{ url_for('pedidos_pendientes') }}" class="nav-link {% if request.endpoint == 'pedidos_pendientes' %}active{% endif %}">
-                        <i class="fas fa-clock"></i> Pedidos Pendientes
-                    </a>
-                    <a href="{{ url_for('historial_admin') }}" class="nav-link {% if request.endpoint == 'historial_admin' %}active{% endif %}">
-                        <i class="fas fa-history"></i> Historial
-                    </a>
-                {% elif session.rol == 'cliente' %}
-                    <a href="{{ url_for('solicitud_nueva') }}" class="nav-link {% if request.endpoint == 'solicitud_nueva' %}active{% endif %}">
-                        <i class="fas fa-plus-circle"></i> Nueva Solicitud
-                    </a>
-                    <a href="{{ url_for('solicitud_mostrar') }}" class="nav-link {% if request.endpoint == 'solicitud_mostrar' %}active{% endif %}">
-                        <i class="fas fa-list"></i> Mis Solicitudes
-                    </a>
-                {% elif session.rol == 'trabajador' %}
-                    <a href="{{ url_for('pedidos_asignados') }}" class="nav-link {% if request.endpoint == 'pedidos_asignados' %}active{% endif %}">
-                        <i class="fas fa-tasks"></i> Pedidos Asignados
-                    </a>
-                    <a href="{{ url_for('historial_entregas') }}" class="nav-link {% if request.endpoint == 'historial_entregas' %}active{% endif %}">
-                        <i class="fas fa-history"></i> Historial
-                    </a>
-                {% endif %}
-                
-                <div class="nav-divider"></div>
-                
-                <div class="user-menu">
-                    <span class="user-name">
-                        <i class="fas fa-user"></i> {{ session.usuario }}
-                    </span>
-                    <a href="{{ url_for('logout') }}" class="nav-link logout-link">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                    </a>
-                </div>
             {% else %}
-                <a href="{{ url_for('login') }}" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">
-                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                </a>
-                <a href="{{ url_for('seleccionar_registro') }}" class="nav-link {% if request.endpoint == 'seleccionar_registro' %}active{% endif %}">
-                    <i class="fas fa-user-plus"></i> Registrarse
-                </a>
+            <a class="navbar-brand" href="{{ url_for('inventario_normal') }}">
+                <i class="fas fa-warehouse"></i> Almacén
+            </a>
             {% endif %}
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if session.rol == 'admin' %}
+                    <!-- Menú completo para administradores -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownInventario" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-boxes"></i> Inventario
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownInventario">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('inventario') }}">
+                                    <i class="fas fa-list"></i> Ver Inventario
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('ingreso_producto') }}">
+                                    <i class="fas fa-plus-circle"></i> Ingreso de Productos
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMovimientos" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-exchange-alt"></i> Movimientos
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMovimientos">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('prestamo_nuevo') }}">
+                                    <i class="fas fa-hand-holding"></i> Préstamo
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('devolucion') }}">
+                                    <i class="fas fa-undo"></i> Devolución
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('salida_producto') }}">
+                                    <i class="fas fa-sign-out-alt"></i> Salida
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('salida_combustible') }}">
+                                    <i class="fas fa-gas-pump"></i> Salida de Combustible
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('donacion') }}">
+                                    <i class="fas fa-gift"></i> Donación
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('reportes') }}">
+                            <i class="fas fa-file-excel"></i> Reportes
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('historial') }}">
+                            <i class="fas fa-history"></i> Historial
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- Usuario y Logout (visible para todos) -->
+                <div class="navbar-nav">
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" 
+                           data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ session.usuario }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
+    {% endif %}
 
-    <div class="contenido">
-        {% block contenido %}{% endblock %}
+    <div class="container py-4">
+        {% block content %}{% endblock %}
     </div>
 
+    {% block scripts %}
     <script>
-        document.querySelector('.navbar-toggle').addEventListener('click', function() {
-            document.querySelector('.nav-menu').classList.toggle('active');
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar si hay una redirección pendiente después de una descarga
+        const response = document.querySelector('meta[name="redirect-after-download"]');
+        if (response) {
+            const redirectUrl = response.getAttribute('content');
+            if (redirectUrl) {
+                setTimeout(function() {
+                    window.location.href = redirectUrl;
+                }, 1000); // Espera 1 segundo antes de redirigir
+            }
+        }
+    });
     </script>
+    {% endblock %}
+
+    <!-- Scripts correctos al final del body -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

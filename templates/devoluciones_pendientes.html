@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}Devoluciones Pendientes - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg border-0 rounded-lg">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="d-flex justify-content-between align-items-center py-2">
+            <h4 class="mb-0 text-white">
+                <i class="fas fa-clipboard-check me-2"></i>Devoluciones Pendientes
+            </h4>
+            <div id="prestamosSeleccionados" class="badge bg-light text-primary fs-6 px-4 py-2">
+                <i class="fas fa-layer-group me-2"></i>Seleccionados: 0
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body bg-light">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Buscador mejorado -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="search-container">
+                    <div class="input-group input-group-lg shadow-sm">
+                        <span class="input-group-text border-0 bg-white">
+                            <i class="fas fa-search text-primary"></i>
+                        </span>
+                        <input type="text" id="buscarPrestamo" 
+                               class="form-control border-0 py-2" 
+                               placeholder="Buscar por código, producto o solicitante...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de devolución -->
+        <form id="formDevolucion" method="POST" action="{{ url_for('procesar_devolucion') }}">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle custom-table">
+                    <thead>
+                        <tr class="text-center">
+                            <th>
+                                <div class="form-check">
+                                    <input type="checkbox" id="seleccionarTodos" class="form-check-input">
+                                </div>
+                            </th>
+                            <th><i class="fas fa-hashtag me-2"></i>N° Préstamo</th>
+                            <th><i class="fas fa-barcode me-2"></i>Código</th>
+                            <th><i class="fas fa-box me-2"></i>Producto</th>
+                            <th><i class="fas fa-cubes me-2"></i>Cantidad</th>
+                            <th><i class="fas fa-ruler me-2"></i>U.M.</th>
+                            <th><i class="fas fa-user me-2"></i>Solicitante</th>
+                            <th><i class="fas fa-calendar-plus me-2"></i>Fecha Préstamo</th>
+                            <th><i class="fas fa-calendar-check me-2"></i>Fecha Dev.</th>
+                            <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prestamo in prestamos %}
+                        <tr class="text-center">
+                            <td>
+                                <div class="form-check">
+                                    <input type="checkbox" name="detalles[]" 
+                                           value="{{ prestamo[11] }}" 
+                                           class="form-check-input checkbox-prestamo">
+                                </div>
+                            </td>
+                            <td><span class="badge bg-primary">{{ '%03d' % prestamo[1] }}</span></td>
+                            <td>{{ prestamo[3] }}</td>
+                            <td class="text-start">{{ prestamo[4] }}</td>
+                            <td>{{ prestamo[5] }}</td>
+                            <td><span class="badge bg-info">{{ prestamo[6] }}</span></td>
+                            <td class="text-start">{{ prestamo[7] }} {{ prestamo[8] }}</td>
+                            <td>{{ prestamo[9].strftime('%d/%m/%Y') }}</td>
+                            <td>{{ prestamo[10].strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if prestamo[10] < now %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Vencido
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-clock me-1"></i>En tiempo
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary btn-lg custom-button" id="btnDevolver" disabled>
+                    <i class="fas fa-check me-2"></i>Procesar Devolución
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Agregar el modal de confirmación antes del script -->
+<div class="modal fade" id="confirmacionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Confirmar Devolución</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-3">¿Está seguro de procesar la devolución de los siguientes productos?</h6>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>N° Préstamo</th>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Solicitante</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-devoluciones">
+                            <!-- Se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> 
+                    Al confirmar, estos productos serán devueltos al inventario y el préstamo será marcado como completado.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarDevolucion">
+                    <i class="fas fa-check"></i> Confirmar Devolución
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-button {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    padding: 0.8rem 2rem;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+}
+
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table thead th {
+    background-color: var(--light);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(var(--primary-rgb), 0.05);
+    transform: scale(1.01);
+}
+
+.form-check-input {
+    cursor: pointer;
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+
+.search-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .custom-button {
+        width: 100%;
+    }
+    
+    .custom-table {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const seleccionarTodos = document.getElementById('seleccionarTodos');
+    const checkboxes = document.getElementsByClassName('checkbox-prestamo');
+    const btnDevolver = document.getElementById('btnDevolver');
+    const prestamosSeleccionados = document.getElementById('prestamosSeleccionados');
+    
+    // Búsqueda en tiempo real
+    document.getElementById('buscarPrestamo').addEventListener('keyup', function() {
+        const busqueda = this.value.toLowerCase();
+        const filas = document.querySelectorAll('tbody tr');
+        
+        filas.forEach(fila => {
+            const codigo = fila.cells[2].textContent.toLowerCase();
+            const producto = fila.cells[3].textContent.toLowerCase();
+            const solicitante = fila.cells[6].textContent.toLowerCase();
+            
+            fila.style.display = 
+                codigo.includes(busqueda) || 
+                producto.includes(busqueda) || 
+                solicitante.includes(busqueda) ? '' : 'none';
+        });
+    });
+
+    // Seleccionar/Deseleccionar todos
+    seleccionarTodos.addEventListener('change', function() {
+        Array.from(checkboxes).forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        actualizarBotonDevolver();
+    });
+
+    // Actualizar estado del botón cuando se selecciona un checkbox individual
+    Array.from(checkboxes).forEach(checkbox => {
+        checkbox.addEventListener('change', actualizarBotonDevolver);
+    });
+
+    function actualizarBotonDevolver() {
+        const seleccionados = Array.from(checkboxes).filter(cb => cb.checked).length;
+        btnDevolver.disabled = seleccionados === 0;
+        prestamosSeleccionados.textContent = `Seleccionados: ${seleccionados}`;
+    }
+
+    // Cerrar alertas automáticamente después de 5 segundos
+    const alertas = document.querySelectorAll('.alert');
+    alertas.forEach(alerta => {
+        setTimeout(() => {
+            alerta.classList.remove('show');
+            setTimeout(() => alerta.remove(), 150);
+        }, 5000);
+    });
+
+    // Modificar el evento submit del formulario
+    const form = document.getElementById('formDevolucion');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Obtener los préstamos seleccionados
+        const checkboxesSeleccionados = document.querySelectorAll('.checkbox-prestamo:checked');
+        const previewBody = document.getElementById('preview-devoluciones');
+        previewBody.innerHTML = '';
+        
+        checkboxesSeleccionados.forEach(checkbox => {
+            const fila = checkbox.closest('tr');
+            const numPrestamo = fila.cells[1].textContent;
+            const codigo = fila.cells[2].textContent;
+            const producto = fila.cells[3].textContent;
+            const cantidad = fila.cells[4].textContent;
+            const solicitante = fila.cells[6].textContent;
+            const estado = fila.cells[9].querySelector('.badge').textContent;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${numPrestamo}</td>
+                <td>${codigo}</td>
+                <td>${producto}</td>
+                <td>${cantidad}</td>
+                <td>${solicitante}</td>
+                <td><span class="badge ${estado === 'Vencido' ? 'bg-danger' : 'bg-success'}">${estado}</span></td>
+            `;
+            previewBody.appendChild(tr);
+        });
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
+        modal.show();
+    });
+
+    // Manejar la confirmación
+    document.getElementById('btnConfirmarDevolucion').addEventListener('click', function() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmacionModal'));
+        modal.hide();
+        
+        // Enviar el formulario y redirigir
+        form.submit();
+        setTimeout(function() {
+            window.location.href = "{{ url_for('index') }}";
+        }, 1000);
+    });
+});
+</script>
+{% endblock %}

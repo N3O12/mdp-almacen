@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Donación - Almacén Municipal{% endblock %}
+
+{% block content %}
+<!-- Barra de acciones fija mejorada -->
+<div class="action-bar">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="stats-badge">
+                            <i class="fas fa-gift me-2"></i>
+                            <span id="productosSeleccionados">Productos seleccionados: 0</span>
+                        </div>
+                        <button type="submit" form="formDonacion" 
+                                class="btn btn-primary btn-lg custom-button" 
+                                id="btnContinuar" disabled>
+                            Continuar <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                    <a href="{{ url_for('index') }}" 
+                       class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-lg border-0 rounded-lg">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="row align-items-center py-2">
+            <div class="col-md-6">
+                <h4 class="mb-0 text-white">
+                    <i class="fas fa-gift me-2"></i>Nueva Donación
+                </h4>
+            </div>
+            <div class="col-md-6">
+                <div class="search-container bg-white rounded-pill">
+                    <div class="input-group">
+                        <span class="input-group-text border-0 bg-transparent">
+                            <i class="fas fa-search text-primary"></i>
+                        </span>
+                        <input type="text" id="buscarProducto" 
+                               class="form-control border-0 shadow-none" 
+                               placeholder="Buscar producto...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body bg-light">
+        <form id="formDonacion" action="{{ url_for('confirmar_donacion') }}" method="POST">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="selectAll">
+                                </div>
+                            </th>
+                            <th><i class="fas fa-barcode me-2"></i>Código</th>
+                            <th><i class="fas fa-box me-2"></i>Producto</th>
+                            <th><i class="fas fa-tags me-2"></i>Categoría</th>
+                            <th><i class="fas fa-building me-2"></i>Procedencia</th>
+                            <th><i class="fas fa-cubes me-2"></i>Stock</th>
+                            <th><i class="fas fa-ruler me-2"></i>U.M.</th>
+                            <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr class="{{ 'table-light' if producto[8] != 'disponible' or producto[4] <= 0 }}">
+                            <td>
+                                <div class="form-check">
+                                    <input type="checkbox" name="productos[]" 
+                                           value="{{ producto[0] }}" class="form-check-input"
+                                           {% if producto[8] != 'disponible' or producto[4] <= 0 %}disabled{% endif %}>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ producto[1] }}</span></td>
+                            <td>{{ producto[2] }}</td>
+                            <td><span class="badge bg-info text-dark">{{ producto[9] }}</span></td>
+                            <td>{{ producto[6] }}</td>
+                            <td class="fw-bold {% if producto[4] <= 0 %}text-danger{% endif %}">
+                                {{ producto[4] }}
+                            </td>
+                            <td>{{ producto[5] }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if producto[8] == 'disponible' 
+                                                    else 'warning' if producto[8] == 'prestado' 
+                                                    else 'danger' }}">
+                                    {{ producto[8] }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    padding: 1rem;
+    z-index: 1000;
+}
+
+.stats-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 500;
+}
+
+.custom-button {
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.search-container {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table thead th {
+    background-color: var(--light);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.custom-table thead th i {
+    color: var(--primary-color);
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.custom-table thead th:hover i {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover:not(.disabled-row) {
+    background-color: rgba(var(--primary-rgb), 0.05);
+    transform: scale(1.01);
+}
+
+.disabled-row {
+    background-color: var(--light);
+    opacity: 0.6;
+}
+
+/* Actualizar estilos de ordenamiento */
+th.asc::after, th.desc::after {
+    display: inline-block;
+    margin-left: 5px;
+    color: var(--primary-color);
+    transition: transform 0.2s ease;
+}
+
+th.asc::after {
+    content: '↑';
+}
+
+th.desc::after {
+    content: '↓';
+}
+
+th:hover.asc::after, th:hover.desc::after {
+    transform: scale(1.2);
+}
+
+.badge {
+    padding: 0.5em 1em;
+    border-radius: 50px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .action-bar {
+        padding: 0.5rem;
+    }
+    
+    .custom-button {
+        width: 100%;
+    }
+    
+    .search-container {
+        margin-top: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[name="productos[]"]');
+    const btnContinuar = document.getElementById('btnContinuar');
+    const contador = document.getElementById('productosSeleccionados');
+    const buscarInput = document.getElementById('buscarProducto');
+    const selectAll = document.getElementById('selectAll');
+
+    function actualizarSeleccion() {
+        const seleccionados = document.querySelectorAll('input[name="productos[]"]:checked').length;
+        contador.textContent = `Productos seleccionados: ${seleccionados}`;
+        btnContinuar.disabled = seleccionados === 0;
+    }
+
+    // Seleccionar Todos
+    selectAll.addEventListener('change', function() {
+        const checkboxesHabilitados = document.querySelectorAll('input[name="productos[]"]:not([disabled])');
+        checkboxesHabilitados.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        actualizarSeleccion();
+    });
+
+    // Búsqueda
+    buscarInput.addEventListener('keyup', function() {
+        const busqueda = this.value.toLowerCase();
+        const filas = document.querySelectorAll('tbody tr');
+        
+        filas.forEach(fila => {
+            const codigo = fila.cells[1].textContent.toLowerCase();
+            const producto = fila.cells[2].textContent.toLowerCase();
+            const categoria = fila.cells[3].textContent.toLowerCase();
+            const procedencia = fila.cells[4].textContent.toLowerCase();
+            
+            fila.style.display = 
+                codigo.includes(busqueda) || 
+                producto.includes(busqueda) || 
+                categoria.includes(busqueda) ||
+                procedencia.includes(busqueda) ? '' : 'none';
+        });
+    });
+
+    // Eventos de checkbox y ordenamiento
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', actualizarSeleccion);
+        if (checkbox.disabled) {
+            checkbox.closest('tr').classList.add('disabled');
+        }
+    });
+
+    // Ordenamiento
+    document.querySelectorAll('th').forEach(headerCell => {
+        if (headerCell.cellIndex === 0) return;
+        headerCell.addEventListener('click', () => {
+            const tableBody = document.querySelector('tbody');
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const columnIndex = headerCell.cellIndex;
+
+            const sortedRows = rows.sort((a, b) => {
+                const aValue = a.cells[columnIndex].textContent.trim();
+                const bValue = b.cells[columnIndex].textContent.trim();
+                return aValue.localeCompare(bValue);
+            });
+
+            if (headerCell.classList.contains('asc')) {
+                sortedRows.reverse();
+                headerCell.classList.remove('asc');
+                headerCell.classList.add('desc');
+            } else {
+                headerCell.classList.remove('desc');
+                headerCell.classList.add('asc');
+            }
+
+            tableBody.append(...sortedRows);
+        });
+    });
+});
+</script>
+{% endblock %}

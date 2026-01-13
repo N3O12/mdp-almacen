@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Reporte de Salidas de Materiales</h2>
+    
+    <div class="mb-3">
+        <a href="{{ url_for('descargar_salidas') }}" class="btn btn-primary">
+            <i class="fas fa-download"></i> Descargar Reporte
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Solicitante</th>
+                    <th>DNI</th>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>UM</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for salida in salidas %}
+                <tr>
+                    <td>{{ salida[1].strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ salida[2] }}</td>
+                    <td>{{ salida[3] }}</td>
+                    <td>{{ salida[4] }}</td>
+                    <td>{{ salida[5] }}</td>
+                    <td>{{ "%.2f"|format(salida[6]) }}</td>
+                    <td>{{ salida[7] }}</td>
+                    <td>{{ salida[8] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table> 
+    </div>
+</div>
+{% endblock %}

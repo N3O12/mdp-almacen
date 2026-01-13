@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Devoluciones - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg border-0 rounded-lg">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="d-flex justify-content-between align-items-center py-2">
+            <h4 class="mb-0 text-white">
+                <i class="fas fa-undo-alt me-2"></i>Devoluciones
+            </h4>
+            <a href="{{ url_for('devoluciones_pendientes') }}" 
+               class="btn btn-light btn-lg custom-button">
+                <i class="fas fa-plus me-2"></i>Nueva Devolución
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body bg-light">
+        <!-- Buscador mejorado -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="search-container">
+                    <div class="input-group input-group-lg shadow-sm">
+                        <span class="input-group-text border-0 bg-white">
+                            <i class="fas fa-search text-primary"></i>
+                        </span>
+                        <input type="text" id="buscarDevolucion" 
+                               class="form-control border-0 py-2 custom-input" 
+                               placeholder="Buscar por código, producto o solicitante...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla mejorada -->
+        <div class="table-responsive">
+            <table id="tablaDevoluciones" class="table table-hover align-middle custom-table">
+                <thead>
+                    <tr class="text-center">
+                        <th><i class="fas fa-hashtag me-2"></i>N° Devolución</th>
+                        <th><i class="fas fa-file-alt me-2"></i>N° Préstamo</th>
+                        <th><i class="fas fa-barcode me-2"></i>Código</th>
+                        <th><i class="fas fa-box me-2"></i>Producto</th>
+                        <th><i class="fas fa-cubes me-2"></i>Cantidad</th>
+                        <th><i class="fas fa-ruler me-2"></i>U.M.</th>
+                        <th><i class="fas fa-user me-2"></i>Solicitante</th>
+                        <th><i class="fas fa-calendar-plus me-2"></i>Fecha Préstamo</th>
+                        <th><i class="fas fa-calendar-check me-2"></i>Fecha Devolución</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for devolucion in devoluciones %}
+                    <tr class="text-center">
+                        <td><span class="badge bg-primary">{{ '%03d' % devolucion[1] }}</span></td>
+                        <td><span class="badge bg-secondary">{{ '%03d' % devolucion[3] }}</span></td>
+                        <td>{{ devolucion[4] }}</td>
+                        <td class="text-start">{{ devolucion[5] }}</td>
+                        <td>{{ devolucion[6] }}</td>
+                        <td><span class="badge bg-info">{{ devolucion[7] }}</span></td>
+                        <td class="text-start">{{ devolucion[8] }} {{ devolucion[9] }}</td>
+                        <td>{{ devolucion[10] }}</td>
+                        <td>{{ devolucion[11] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos personalizados */
+.custom-button {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1.5rem;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.search-container {
+    margin-bottom: 1.5rem;
+}
+
+.custom-input {
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+}
+
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table thead th {
+    background-color: var(--light);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(var(--primary-rgb), 0.05);
+    transform: scale(1.01);
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .custom-table {
+        font-size: 0.9rem;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .custom-button {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscarInput = document.getElementById('buscarDevolucion');
+
+    buscarInput.addEventListener('keyup', function() {
+        const busqueda = this.value.toLowerCase();
+        const filas = document.querySelectorAll('#tablaDevoluciones tbody tr');
+        
+        filas.forEach(fila => {
+            const codigo = fila.cells[2].textContent.toLowerCase();
+            const producto = fila.cells[3].textContent.toLowerCase();
+            const solicitante = fila.cells[6].textContent.toLowerCase();
+            
+            fila.style.display = 
+                codigo.includes(busqueda) || 
+                producto.includes(busqueda) || 
+                solicitante.includes(busqueda) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

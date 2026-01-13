@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Productos - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card-header" style="background: linear-gradient(135deg, #36b9cc, #2a8a98);">
+            <h4 class="text-white mb-0">
+                <i class="fas fa-history me-2"></i>Historial de Productos
+            </h4>
+        </div>
+        
+        <div class="card-body bg-light">
+            {% if mensaje %}
+            <div class="alert alert-info border-0 shadow-sm">
+                <i class="fas fa-info-circle me-2"></i>{{ mensaje }}
+            </div>
+            {% endif %}
+
+            {% if productos %}
+            <!-- Búsqueda mejorada -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" id="buscarProducto" class="form-control custom-input" 
+                               placeholder="Buscar...">
+                        <label><i class="fas fa-search me-2"></i>Buscar por código o nombre</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla mejorada -->
+            <div class="table-responsive">
+                <table class="table table-hover custom-table" id="tablaProductos">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-barcode me-2"></i>Código</th>
+                            <th><i class="fas fa-box me-2"></i>Producto</th>
+                            <th><i class="fas fa-tags me-2"></i>Categoría</th>
+                            <th><i class="fas fa-cubes me-2"></i>Stock Actual</th>
+                            <th><i class="fas fa-clock me-2"></i>Último Movimiento</th>
+                            <th><i class="fas fa-check-circle me-2"></i>Estado</th>
+                            <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto[1] }}</td>  <!-- Código -->
+                            <td>{{ producto[2] }}</td>  <!-- Nombre -->
+                            <td>{{ producto[3] }}</td>  <!-- Categoría -->
+                            <td class="text-center fw-bold">{{ producto[4] }} {{ producto[5] }}</td>  <!-- Stock y Unidad -->
+                            <td>{{ producto[7].strftime('%d/%m/%Y %H:%M') if producto[7] else 'Sin movimientos' }}</td>
+                            <td class="text-center">
+                                <span class="badge 
+                                    {% if producto[4] > 0 %}
+                                        bg-success
+                                    {% elif producto[4] == 0 %}
+                                        bg-danger
+                                    {% endif %}">
+                                    <i class="fas 
+                                        {% if producto[4] > 0 %}
+                                            fa-check
+                                        {% else %}
+                                            fa-times
+                                        {% endif %} me-1"></i>
+                                    {% if producto[4] > 0 %}
+                                        Disponible
+                                    {% else %}
+                                        Agotado
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-info btn-sm" 
+                                        onclick="verHistorial('{{ producto[0] }}')"
+                                        data-bs-toggle="tooltip"
+                                        title="Ver historial de movimientos">
+                                    <i class="fas fa-history me-1"></i> Ver Historial
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal mejorado -->
+<div class="modal fade" id="modalHistorial" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header" style="background: linear-gradient(135deg, #36b9cc, #2a8a98);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-history me-2"></i>Historial Detallado
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <div id="timelineHistorial"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-input {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    border-color: #36b9cc;
+    box-shadow: 0 0 0 0.2rem rgba(54,185,204,0.25);
+}
+
+.custom-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.custom-table thead {
+    background: linear-gradient(135deg, #f8f9fc, #f1f3f9);
+}
+
+.custom-table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #36b9cc;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(54,185,204,0.05);
+    transform: scale(1.01);
+}
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding: 20px 0;
+    border-left: 2px solid #36b9cc;
+    margin-left: 20px;
+}
+
+.timeline-date {
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #36b9cc;
+}
+
+.timeline-content {
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    margin-left: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.timeline-content:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 28px;
+    width: 12px;
+    height: 12px;
+    background: #36b9cc;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(54,185,204,0.2);
+}
+
+.badge {
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #36b9cc, #2a8a98);
+    border: none;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(54,185,204,0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .timeline-content {
+        margin-left: 10px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscarInput = document.getElementById('buscarProducto');
+    
+    buscarInput.addEventListener('keyup', function() {
+        const busqueda = this.value.toLowerCase();
+        const filas = document.querySelectorAll('#tablaProductos tbody tr');
+        
+        filas.forEach(fila => {
+            const codigo = fila.cells[0].textContent.toLowerCase();
+            const nombre = fila.cells[1].textContent.toLowerCase();
+            const categoria = fila.cells[2].textContent.toLowerCase();
+            
+            fila.style.display = 
+                codigo.includes(busqueda) || 
+                nombre.includes(busqueda) || 
+                categoria.includes(busqueda) ? '' : 'none';
+        });
+    });
+
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+function verHistorial(productoId) {
+    fetch(`/api/historial/${productoId}`)
+        .then(response => response.json())
+        .then(data => {
+            const timeline = document.getElementById('timelineHistorial');
+            timeline.innerHTML = generarTimeline(data);
+            new bootstrap.Modal(document.getElementById('modalHistorial')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar el historial');
+        });
+}
+
+function generarTimeline(movimientos) {
+    if (movimientos.length === 0) {
+        return '<div class="alert alert-info">No hay movimientos registrados para este producto.</div>';
+    }
+
+    let html = '<div class="timeline">';
+    movimientos.forEach(mov => {
+        let iconoClase = '';
+        switch(mov.tipo_modificacion) {
+            case 'ingreso':
+                iconoClase = 'fa-plus-circle text-success';
+                break;
+            case 'salida':
+                iconoClase = 'fa-minus-circle text-danger';
+                break;
+            case 'prestamo':
+                iconoClase = 'fa-hand-holding text-warning';
+                break;
+            case 'devolucion':
+                iconoClase = 'fa-undo text-info';
+                break;
+            default:
+                iconoClase = 'fa-exchange-alt';
+        }
+
+        html += `
+            <div class="timeline-item">
+                <div class="timeline-date">
+                    <i class="fas ${iconoClase}"></i>
+                    ${mov.fecha}
+                </div>
+                <div class="timeline-content">
+                    <h6>${mov.tipo_modificacion.toUpperCase()}</h6>
+                    <p>Cantidad: ${mov.cantidad}</p>
+                    <p>${mov.detalle}</p>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+}
+</script>
+{% endblock %}

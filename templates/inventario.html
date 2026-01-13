@@ -1,0 +1,1117 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 py-3">
+            <h4 class="mb-0 text-white d-flex align-items-center">
+                <i class="fas fa-boxes me-2" style="color: var(--accent-color);"></i>
+                <span class="text-white">Inventario Actual</span>
+            </h4>
+            
+            <!-- Contenedor de filtros con diseño mejorado -->
+            <div class="d-flex gap-3 flex-wrap align-items-center">
+                <!-- Filtros de fecha -->
+                <div class="filter-group d-flex gap-2 align-items-center rounded p-2" 
+                     style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0 text-white">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <input type="date" id="fechaInicio" class="form-control form-control-sm bg-transparent text-white border-0 custom-input" 
+                               data-bs-toggle="tooltip" title="Fecha inicial"
+                               style="width: 130px;">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0 text-white">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <input type="date" id="fechaFin" class="form-control form-control-sm bg-transparent text-white border-0 custom-input" 
+                               data-bs-toggle="tooltip" title="Fecha final"
+                               style="width: 130px;">
+                    </div>
+                </div>
+                
+                <!-- Buscador con icono -->
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text bg-transparent border-0 text-white">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="buscarProducto" class="form-control form-control-sm bg-transparent text-white border-0 custom-input" 
+                           placeholder="Buscar producto..."
+                           style="width: 200px;">
+                </div>
+                
+                <!-- Selector de categoría con icono -->
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text bg-transparent border-0 text-white">
+                        <i class="fas fa-tags"></i>
+                    </span>
+                    <select id="filtroCategoria" class="form-select form-select-sm bg-transparent border-0 custom-select" style="color: #000 !important;">
+                        <option value="">Todas las categorías</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria[1] }}">{{ categoria[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Botón Limpiar Filtros modernizado -->
+                <button type="button" id="btnLimpiarFiltros" 
+                        class="btn btn-light btn-sm custom-btn-clear">
+                    <i class="fas fa-eraser me-1"></i>Limpiar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body custom-card-body">
+        {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle" id="inventarioTable">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th class="text-nowrap"><i class="fas fa-barcode me-2"></i>Código</th>
+                        <th class="text-nowrap"><i class="fas fa-box me-2"></i>Nombre</th>
+                        <th><i class="fas fa-align-left me-2"></i>Descripción</th>
+                        <th class="text-nowrap"><i class="fas fa-cubes me-2"></i>Stock</th>
+                        <th class="text-nowrap"><i class="fas fa-ruler me-2"></i>U.M.</th>
+                        <th class="text-nowrap"><i class="fas fa-tag me-2"></i>Categoría</th>
+                        <th class="text-nowrap"><i class="fas fa-map-marker-alt me-2"></i>Procedencia</th>
+                        <th class="text-nowrap"><i class="fas fa-calendar-check me-2"></i>Fecha Ingreso</th>
+                        <th class="text-nowrap"><i class="fas fa-info-circle me-2"></i>Estado</th>
+                        <th class="text-nowrap"><i class="fas fa-cogs me-2"></i>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>
+                        <td class="text-center">{{ producto[1] }}</td>
+                        <td>{{ producto[2] }}</td>
+                        <td>{{ producto[3] }}</td>
+                        <td class="text-center fw-bold">{{ producto[4] }}</td>
+                        <td class="text-center">{{ producto[5] }}</td>
+                        <td>{{ producto[6] }}</td>
+                        <td>{{ producto[8] }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">
+                                <i class="far fa-clock me-1"></i>
+                                {{ producto[7].strftime('%d/%m/%Y %H:%M') }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge 
+                                {% if producto[4] > 0 %}
+                                    bg-success
+                                {% elif producto[4] == 0 and producto[10] > 0 %}
+                                    bg-warning
+                                {% else %}
+                                    bg-danger
+                                {% endif %}">
+                                <i class="fas 
+                                    {% if producto[4] > 0 %}
+                                        fa-check
+                                    {% elif producto[4] == 0 and producto[10] > 0 %}
+                                        fa-exclamation-triangle
+                                    {% else %}
+                                        fa-times
+                                    {% endif %} me-1"></i>
+                                {% if producto[4] > 0 %}
+                                    Disponible
+                                {% elif producto[4] == 0 and producto[10] > 0 %}
+                                    Prestado
+                                {% else %}
+                                    Agotado
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <!-- Botón de editar (existente) -->
+                                <button class="btn btn-warning btn-sm" 
+                                        onclick="editarDescripcion('{{ producto[0] }}', '{{ producto[3] }}', '{{ producto[7].isoformat() if producto[7] else None }}')"
+                                        data-bs-toggle="tooltip" 
+                                        title="Editar descripción">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                
+                                <!-- Botón de agregar (existente) -->
+                                <button class="btn btn-success btn-sm"
+                                        onclick="mostrarDevolucion('{{ producto[0] }}', '{{ producto[2] }}', '{{ producto[4] }}')"
+                                        data-bs-toggle="tooltip"
+                                        title="Agregar al inventario">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                
+                                <!-- Botón simple de eliminar -->
+                                <button class="btn btn-danger btn-sm" 
+                                        onclick="confirmarEliminarProducto('{{ producto[0] }}', '{{ producto[2] }}')"
+                                        data-bs-toggle="tooltip"
+                                        title="Eliminar producto">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editarDescripcionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Editar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditarDescripcion" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" id="productoId" name="producto_id">
+                    
+                    <!-- Campo de fecha y hora - Ahora opcional -->
+                    <div class="mb-3">
+                        <label for="fechaIngreso" class="form-label">
+                            <i class="fas fa-calendar-alt me-1"></i>Fecha de Ingreso:
+                            <small class="text-muted">(opcional)</small>
+                        </label>
+                        <input type="datetime-local" class="form-control" 
+                               id="fechaIngreso" name="fecha_ingreso">
+                    </div>
+                    
+                    <!-- Campo de descripción - Ahora opcional -->
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Descripción:
+                            <small class="text-muted">(opcional)</small>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="descripcion" 
+                            name="descripcion"
+                            rows="3"
+                        ></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="devolucionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Agregar Stock</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formDevolucion" onsubmit="event.preventDefault();">
+                <div class="modal-body">
+                    <input type="hidden" id="devolucionProductoId">
+                    
+                    <!-- Información del producto -->
+                    <div class="card mb-3 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Información del Producto</h6>
+                            <p class="mb-1"><strong>Producto: </strong><span id="nombreProductoDevolucion"></span></p>
+                            <p class="mb-1"><strong>Stock Actual: </strong><span id="stockActual"></span></p>
+                        </div>
+                    </div>
+
+                    <!-- Cantidad a agregar -->
+                    <div class="mb-3">
+                        <label for="cantidadDevolucion" class="form-label">
+                            <i class="fas fa-plus me-1"></i>Cantidad a Agregar:
+                        </label>
+                        <input type="number" class="form-control" id="cantidadDevolucion" 
+                               min="0.01" step="0.01" required>
+                        <div class="form-text text-danger" id="errorCantidad"></div>
+                    </div>
+
+                    <!-- Motivo de ingreso -->
+                    <div class="mb-3">
+                        <label for="motivoIngreso" class="form-label">
+                            <i class="fas fa-info-circle me-1"></i>Motivo de Ingreso:
+                        </label>
+                        <input type="text" class="form-control" id="motivoIngreso" 
+                               placeholder="Ingrese el motivo del ingreso al inventario" required>
+                    </div>
+                    
+                    <!-- Observación del producto -->
+                    <div class="mb-3">
+                        <label for="observacionDevolucion" class="form-label">
+                            <i class="fas fa-clipboard me-1"></i>Observación del Producto:
+                        </label>
+                        <textarea class="form-control" id="observacionDevolucion" 
+                                  rows="3" placeholder="Ingrese detalles sobre el estado, condición o cualquier información relevante del producto"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-1"></i>Confirmar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="eliminarRegistrosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-trash me-2"></i>Eliminar Registros
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="producto-info mb-3">
+                    <h6>Producto: <span id="nombreProductoEliminarRegistros"></span></h6>
+                </div>
+
+                <!-- Pestañas para diferentes tipos de registros -->
+                <ul class="nav nav-tabs" id="registrosTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#donacionesTab">
+                            <i class="fas fa-gift me-1"></i>Donaciones
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#solicitudesTab">
+                            <i class="fas fa-file-alt me-1"></i>Solicitudes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#prestamosTab">
+                            <i class="fas fa-handshake me-1"></i>Préstamos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#salidasTab">
+                            <i class="fas fa-sign-out-alt me-1"></i>Salidas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#combustibleTab">
+                            <i class="fas fa-gas-pump me-1"></i>Combustible
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3">
+                    <!-- Tab Donaciones -->
+                    <div class="tab-pane fade show active" id="donacionesTab">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="tablaDonaciones">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><input type="checkbox" class="select-all"></th>
+                                        <th>Fecha</th>
+                                        <th>Beneficiario</th>
+                                        <th>Cantidad</th>
+                                        <th>Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab Solicitudes -->
+                    <div class="tab-pane fade" id="solicitudesTab">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="tablaSolicitudes">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><input type="checkbox" class="select-all"></th>
+                                        <th>Fecha</th>
+                                        <th>Solicitante</th>
+                                        <th>Cantidad</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab Préstamos -->
+                    <div class="tab-pane fade" id="prestamosTab">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="tablaPrestamos">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><input type="checkbox" class="select-all"></th>
+                                        <th>Fecha</th>
+                                        <th>Responsable</th>
+                                        <th>Cantidad</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab Salidas -->
+                    <div class="tab-pane fade" id="salidasTab">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="tablaSalidas">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><input type="checkbox" class="select-all"></th>
+                                        <th>Fecha</th>
+                                        <th>Destino</th>
+                                        <th>Cantidad</th>
+                                        <th>Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab Combustible -->
+                    <div class="tab-pane fade" id="combustibleTab">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="tablaCombustible">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><input type="checkbox" class="select-all"></th>
+                                        <th>Fecha</th>
+                                        <th>Vehículo</th>
+                                        <th>Cantidad</th>
+                                        <th>Conductor</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="eliminarSeleccionados()">
+                    <i class="fas fa-trash me-1"></i>Eliminar Seleccionados
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="eliminarDocumentosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-trash me-2"></i>Eliminar Documentos
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="producto-info mb-3">
+                    <h6>Producto: <span id="nombreProductoEliminarDocs" class="fw-bold"></span></h6>
+                </div>
+
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action" onclick="cargarDocumentos('salidas')">
+                        <i class="fas fa-sign-out-alt me-2"></i>Documentos de Salida
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="cargarDocumentos('prestamos')">
+                        <i class="fas fa-handshake me-2"></i>Documentos de Préstamo
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="cargarDocumentos('donaciones')">
+                        <i class="fas fa-gift me-2"></i>Documentos de Donación
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="cargarDocumentos('solicitudes')">
+                        <i class="fas fa-file-alt me-2"></i>Documentos de Solicitud
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="cargarDocumentos('combustible')">
+                        <i class="fas fa-gas-pump me-2"></i>Documentos de Combustible
+                    </a>
+                </div>
+
+                <div id="listaDocumentos" class="mt-3" style="display: none;">
+                    <h6 class="mb-3" id="tipoDocumentoSeleccionado"></h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nº Documento</th>
+                                    <th>Fecha</th>
+                                    <th>Responsable/Destino</th>
+                                    <th>Cantidad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaDocumentos">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Menú desplegable principal -->
+<div class="modal fade" id="tipoEliminacionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Seleccionar Tipo de Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="tipoEliminacion">
+                    <option value="">Seleccione tipo...</option>
+                    <option value="producto">Producto</option>
+                    <option value="prestamo">Préstamo</option>
+                    <option value="salida">Salida</option>
+                    <option value="salida_combustible">Salida de Combustible</option>
+                    <option value="donacion">Donación</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="mostrarDetallesEliminacion()">Continuar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mostrar documentos -->
+<div class="modal fade" id="documentosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tituloDocumentos"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>N° Documento</th>
+                                <th>Fecha</th>
+                                <th>Responsable</th>
+                                <th>Cantidad</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaDocumentos">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar documento -->
+<div class="modal fade" id="confirmarEliminarDocumentoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro que desea eliminar el documento N° <span id="numeroDocumentoEliminar"></span>?</p>
+                <p class="text-danger"><strong>Advertencia:</strong> Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="eliminarDocumentoConfirmado()">
+                    <i class="fas fa-trash me-2"></i>Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar producto -->
+<div class="modal fade" id="confirmarEliminarProductoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar Eliminación de Producto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro que desea eliminar el producto "<span id="nombreProductoEliminar"></span>"?</p>
+                <p class="text-danger"><strong>Advertencia:</strong> Esta acción eliminará el producto y todos sus registros asociados de forma permanente.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="eliminarProducto()">
+                    <i class="fas fa-trash me-2"></i>Eliminar Permanentemente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+let productoIdActual = null;
+
+// Función para editar descripción
+function editarDescripcion(id, descripcion, fecha) {
+    productoIdActual = id;
+    document.getElementById('productoId').value = id;
+    document.getElementById('descripcion').value = descripcion || '';
+    if (fecha) {
+        document.getElementById('fechaIngreso').value = fecha;
+    }
+    const modal = new bootstrap.Modal(document.getElementById('editarDescripcionModal'));
+    modal.show();
+}
+
+// Función para mostrar modal de devolución/agregar stock
+function mostrarDevolucion(id, nombre, stockActual) {
+    productoIdActual = id;
+    document.getElementById('devolucionProductoId').value = id;
+    document.getElementById('nombreProductoDevolucion').textContent = nombre;
+    document.getElementById('stockActual').textContent = stockActual;
+    document.getElementById('cantidadDevolucion').value = '';
+    document.getElementById('motivoIngreso').value = '';
+    document.getElementById('observacionDevolucion').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('devolucionModal'));
+    modal.show();
+}
+
+// Función para confirmar eliminación
+function confirmarEliminarProducto(id, nombre) {
+    productoIdActual = id;
+    document.getElementById('nombreProductoEliminar').textContent = nombre;
+    const modal = new bootstrap.Modal(document.getElementById('confirmarEliminarProductoModal'));
+    modal.show();
+}
+
+// Función para eliminar producto
+function eliminarProducto() {
+    fetch(`/eliminar_producto/${productoIdActual}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            const errorMessage = data.error.replace(/\n/g, '<br>');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger';
+            alertDiv.innerHTML = errorMessage;
+            
+            bootstrap.Modal.getInstance(document.getElementById('confirmarEliminarProductoModal')).hide();
+            
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal fade';
+            modalDiv.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Error al Eliminar</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${alertDiv.outerHTML}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+            const errorModal = new bootstrap.Modal(modalDiv);
+            errorModal.show();
+            
+            modalDiv.addEventListener('hidden.bs.modal', function () {
+                document.body.removeChild(modalDiv);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar la solicitud');
+    });
+}
+
+// Función para mostrar mensaje de éxito
+function mostrarMensajeExito(mensaje) {
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal fade';
+    modalDiv.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Operación Exitosa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle me-2"></i>${mensaje}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modalDiv);
+    const successModal = new bootstrap.Modal(modalDiv);
+    successModal.show();
+    modalDiv.addEventListener('hidden.bs.modal', function () {
+        document.body.removeChild(modalDiv);
+        location.reload();
+    });
+}
+
+// Inicialización cuando el DOM está listo
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Inicializar formulario de edición
+    const formEditarDescripcion = document.getElementById('formEditarDescripcion');
+    if (formEditarDescripcion) {
+        formEditarDescripcion.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                producto_id: document.getElementById('productoId').value
+            };
+
+            // Solo incluir campos si tienen valor
+            const descripcion = document.getElementById('descripcion').value;
+            const fechaIngreso = document.getElementById('fechaIngreso').value;
+
+            if (descripcion.trim()) {
+                formData.descripcion = descripcion;
+            }
+            if (fechaIngreso) {
+                formData.fecha_ingreso = fechaIngreso;
+            }
+
+            // Validar que al menos un campo tenga cambios
+            if (!descripcion.trim() && !fechaIngreso) {
+                alert('Debe modificar al menos un campo para guardar los cambios');
+                return;
+            }
+
+            fetch('/editar_descripcion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal de edición
+                    bootstrap.Modal.getInstance(document.getElementById('editarDescripcionModal')).hide();
+                    mostrarMensajeExito('Producto actualizado correctamente');
+                } else {
+                    alert('Error al editar: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la solicitud');
+            });
+        });
+    }
+
+    // Inicializar formulario de devolución/agregar stock
+    const formDevolucion = document.getElementById('formDevolucion');
+    if (formDevolucion) {
+        formDevolucion.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const cantidad = parseFloat(document.getElementById('cantidadDevolucion').value);
+            if (isNaN(cantidad) || cantidad <= 0) {
+                alert('Ingrese una cantidad válida mayor a 0');
+                return;
+            }
+
+            const formData = {
+                producto_id: document.getElementById('devolucionProductoId').value,
+                cantidad: cantidad,
+                motivo: document.getElementById('motivoIngreso').value,
+                observacion: document.getElementById('observacionDevolucion').value
+            };
+
+            fetch('/agregar_stock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal de devolución
+                    bootstrap.Modal.getInstance(document.getElementById('devolucionModal')).hide();
+                    mostrarMensajeExito('Stock actualizado correctamente');
+                } else {
+                    alert('Error al agregar stock: ' + (data.message || data.error));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la solicitud');
+            });
+        });
+    }
+
+    // Función para filtrar la tabla
+    function filtrarTabla() {
+        const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value.toLowerCase();
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
+        const procedencia = document.getElementById('filtroProcedencia').value.toLowerCase();
+        const estado = document.getElementById('filtroEstado').value.toLowerCase();
+        
+        const filas = document.querySelectorAll('#inventarioTable tbody tr');
+        
+        filas.forEach(fila => {
+            const codigo = fila.cells[0].textContent.toLowerCase();
+            const nombre = fila.cells[1].textContent.toLowerCase();
+            const descripcion = fila.cells[2].textContent.toLowerCase();
+            const categoriaFila = fila.cells[5].textContent.toLowerCase();
+            const procedenciaFila = fila.cells[6].textContent.toLowerCase();
+            const fecha = fila.cells[7].querySelector('.badge').textContent.trim();
+            const estadoFila = fila.cells[8].querySelector('.badge').textContent.toLowerCase();
+            
+            // Convertir fecha de la fila a formato comparable
+            const [fechaParte] = fecha.split(' ');
+            const [dia, mes, anio] = fechaParte.split('/');
+            const fechaFila = new Date(`${anio}-${mes}-${dia}`);
+            
+            let mostrarPorBusqueda = true;
+            let mostrarPorCategoria = true;
+            let mostrarPorFecha = true;
+            let mostrarPorProcedencia = true;
+            let mostrarPorEstado = true;
+            
+            // Filtro de búsqueda
+            if (busqueda) {
+                mostrarPorBusqueda = codigo.includes(busqueda) || 
+                                   nombre.includes(busqueda) || 
+                                   descripcion.includes(busqueda) ||
+                                   procedenciaFila.includes(busqueda);
+            }
+            
+            // Filtro de categoría
+            if (categoria) {
+                mostrarPorCategoria = categoriaFila === categoria;
+            }
+            
+            // Filtro de procedencia
+            if (procedencia) {
+                mostrarPorProcedencia = procedenciaFila === procedencia;
+            }
+            
+            // Filtro de estado
+            if (estado) {
+                mostrarPorEstado = estadoFila.includes(estado);
+            }
+            
+            // Filtro de fechas
+            if (fechaInicio && fechaFin) {
+                const inicio = new Date(fechaInicio);
+                const fin = new Date(fechaFin);
+                fin.setHours(23, 59, 59); // Incluir todo el día final
+                mostrarPorFecha = fechaFila >= inicio && fechaFila <= fin;
+            }
+            
+            // Mostrar/ocultar fila según todos los filtros
+            fila.style.display = (mostrarPorBusqueda && 
+                                mostrarPorCategoria && 
+                                mostrarPorFecha && 
+                                mostrarPorProcedencia && 
+                                mostrarPorEstado) ? '' : 'none';
+        });
+    }
+    
+    // Agregar los nuevos selectores al header
+    const headerControls = document.querySelector('.d-flex.gap-3');
+    
+    // Agregar selector de procedencia
+    const procedenciaSelect = `
+        <div class="input-group" style="width: auto;">
+            <span class="input-group-text bg-transparent border-0 text-white">
+                <i class="fas fa-map-marker-alt"></i>
+            </span>
+            <select id="filtroProcedencia" class="form-select form-select-sm bg-transparent border-0" style="color: #000 !important;">
+                <option value="">Todas las procedencias</option>
+                {% for procedencia in procedencias %}
+                <option value="{{ procedencia }}">{{ procedencia }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    `;
+    
+    // Agregar selector de estado
+    const estadoSelect = `
+        <div class="input-group" style="width: auto;">
+            <span class="input-group-text bg-transparent border-0 text-white">
+                <i class="fas fa-info-circle"></i>
+            </span>
+            <select id="filtroEstado" class="form-select form-select-sm bg-transparent border-0" style="color: #000 !important;">
+                <option value="">Todos los estados</option>
+                <option value="disponible">Disponible</option>
+                <option value="prestado">Prestado</option>
+                <option value="agotado">Agotado</option>
+            </select>
+        </div>
+    `;
+    
+    headerControls.insertAdjacentHTML('beforeend', procedenciaSelect);
+    headerControls.insertAdjacentHTML('beforeend', estadoSelect);
+    
+    // Eventos para los filtros
+    document.getElementById('buscarProducto').addEventListener('keyup', filtrarTabla);
+    document.getElementById('filtroCategoria').addEventListener('change', filtrarTabla);
+    document.getElementById('fechaInicio').addEventListener('change', filtrarTabla);
+    document.getElementById('fechaFin').addEventListener('change', filtrarTabla);
+    document.getElementById('filtroProcedencia').addEventListener('change', filtrarTabla);
+    document.getElementById('filtroEstado').addEventListener('change', filtrarTabla);
+    
+    // Actualizar el botón de limpiar filtros
+    document.getElementById('btnLimpiarFiltros').addEventListener('click', function() {
+        document.getElementById('buscarProducto').value = '';
+        document.getElementById('filtroCategoria').value = '';
+        document.getElementById('fechaInicio').value = '';
+        document.getElementById('fechaFin').value = '';
+        document.getElementById('filtroProcedencia').value = '';
+        document.getElementById('filtroEstado').value = '';
+        filtrarTabla();
+    });
+});
+</script>
+
+<style>
+/* Estilos modernos para la interfaz */
+.custom-card-body {
+    background: var(--light-color);
+    padding: 1.5rem;
+}
+
+/* Estilos para los inputs y controles */
+.custom-input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: var(--text-light) !important;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Estilos para los selects */
+.custom-select {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: var(--text-light) !important;
+    backdrop-filter: blur(5px);
+}
+
+.custom-select option {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 8px;
+}
+
+/* Botón de limpiar filtros */
+.custom-btn-clear {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: var(--text-light);
+    transition: all 0.3s ease;
+}
+
+.custom-btn-clear:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Tabla mejorada */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.table thead th {
+    background: var(--secondary-color);
+    color: var(--text-light);
+    font-weight: 500;
+    border: none;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+    transform: scale(1.01);
+}
+
+/* Badges modernos */
+.badge {
+    padding: 0.5em 1em;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Botones de acción */
+.btn-group .btn {
+    border-radius: 6px;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Modales mejorados */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .input-group {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Estilos mejorados para los selectores de procedencia y estado */
+#filtroProcedencia,
+#filtroEstado,
+#filtroCategoria {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 4px;
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+    transition: all 0.3s ease;
+}
+
+#filtroProcedencia:hover,
+#filtroEstado:hover,
+#filtroCategoria:hover {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+#filtroProcedencia:focus,
+#filtroEstado:focus,
+#filtroCategoria:focus {
+    background-color: var(--light-color) !important;
+    color: var(--text-dark) !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Estilos para las opciones del select */
+#filtroProcedencia option,
+#filtroEstado option,
+#filtroCategoria option {
+    background-color: var(--light-color) !important;
+    color: var(--text-dark) !important;
+    padding: 8px !important;
+}
+
+/* Estilo para el texto placeholder de los selects */
+#filtroProcedencia option[value=""],
+#filtroEstado option[value=""],
+#filtroCategoria option[value=""] {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Ajuste del color del ícono del select */
+.input-group-text {
+    color: var(--accent-color) !important;
+}
+</style>
+{% endblock scripts %}

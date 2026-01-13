@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Préstamo - Almacén Municipal{% endblock %}
+
+{% block content %}
+<!-- Barra de acciones fija mejorada -->
+<div class="action-bar">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stats-badge">
+                        <i class="fas fa-box me-2"></i>
+                        <span id="productosSeleccionados">Productos seleccionados: 0</span>
+                    </div>
+                    <button type="submit" form="formPrestamo" 
+                            class="btn btn-primary btn-lg custom-button" 
+                            id="btnContinuar" disabled>
+                        Continuar <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-lg border-0 rounded-lg">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="row align-items-center py-2">
+            <div class="col-md-6">
+                <h4 class="mb-0 text-white">
+                    <i class="fas fa-handshake me-2"></i>Nuevo Préstamo
+                </h4>
+            </div>
+            <div class="col-md-6">
+                <div class="search-container">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text border-0 bg-white">
+                            <i class="fas fa-search text-primary"></i>
+                        </span>
+                        <input type="text" id="buscarProducto" 
+                               class="form-control border-0 py-2" 
+                               placeholder="Buscar por código, producto, categoría o procedencia...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body bg-light">
+        <form id="formPrestamo" action="{{ url_for('confirmar_prestamo') }}" method="POST">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle custom-table" id="tablaProductos">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="selectAll">
+                                </div>
+                            </th>
+                            <th><i class="fas fa-barcode me-2"></i>Código</th>
+                            <th><i class="fas fa-box me-2"></i>Producto</th>
+                            <th><i class="fas fa-tags me-2"></i>Categoría</th>
+                            <th><i class="fas fa-map-marker-alt me-2"></i>Procedencia</th>
+                            <th><i class="fas fa-cubes me-2"></i>Stock</th>
+                            <th><i class="fas fa-ruler me-2"></i>U.M.</th>
+                            <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr class="{{ 'table-light opacity-75' if producto[8] != 'disponible' or producto[4] <= 0 }}">
+                            <td>
+                                <div class="form-check">
+                                    <input type="checkbox" name="productos[]" 
+                                           value="{{ producto[0] }}" class="form-check-input"
+                                           {% if producto[8] != 'disponible' or producto[4] <= 0 %}disabled{% endif %}>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ producto[1] }}</span></td>
+                            <td>{{ producto[2] }}</td>
+                            <td><span class="badge bg-info text-dark">{{ producto[9] }}</span></td>
+                            <td>{{ producto[6] }}</td>
+                            <td class="fw-bold">{{ producto[4] }}</td>
+                            <td>{{ producto[5] }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if producto[8] == 'disponible' 
+                                                    else 'warning' if producto[8] == 'prestado' 
+                                                    else 'danger' }}">
+                                    {{ producto[8] }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    padding: 1rem;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.stats-badge {
+    background: var(--light);
+    color: var(--primary);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.custom-button {
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.custom-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+}
+
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table thead th {
+    background-color: var(--light);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.custom-table thead th:hover {
+    background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(var(--primary-rgb), 0.05);
+    transform: scale(1.01);
+}
+
+.form-check-input {
+    cursor: pointer;
+    width: 1.2rem;
+    height: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+
+.search-container {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .action-bar {
+        padding: 0.5rem;
+    }
+    
+    .custom-button {
+        width: 100%;
+    }
+    
+    .custom-table {
+        font-size: 0.9rem;
+    }
+    
+    .search-container {
+        margin-top: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const btnContinuar = document.getElementById('btnContinuar');
+    const contador = document.getElementById('productosSeleccionados');
+    const buscarInput = document.getElementById('buscarProducto');
+
+    function actualizarSeleccion() {
+        const seleccionados = document.querySelectorAll('input[type="checkbox"]:checked').length;
+        contador.textContent = `Productos seleccionados: ${seleccionados}`;
+        btnContinuar.disabled = seleccionados === 0;
+    }
+
+    buscarInput.addEventListener('keyup', function() {
+        const busqueda = this.value.toLowerCase();
+        const filas = document.querySelectorAll('tbody tr');
+        
+        filas.forEach(fila => {
+            const codigo = fila.cells[1].textContent.toLowerCase();
+            const producto = fila.cells[2].textContent.toLowerCase();
+            const categoria = fila.cells[3].textContent.toLowerCase();
+            const procedencia = fila.cells[4].textContent.toLowerCase();
+            
+            const coincide = 
+                codigo.includes(busqueda) || 
+                producto.includes(busqueda) || 
+                categoria.includes(busqueda) ||
+                procedencia.includes(busqueda);
+            
+            fila.style.display = coincide ? '' : 'none';
+        });
+    });
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', actualizarSeleccion);
+    });
+
+    // Ordenamiento de tabla
+    document.querySelectorAll('th').forEach(headerCell => {
+        headerCell.addEventListener('click', () => {
+            const tableBody = document.querySelector('tbody');
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const columnIndex = headerCell.cellIndex;
+
+            const sortedRows = rows.sort((a, b) => {
+                const aValue = a.cells[columnIndex].textContent.trim();
+                const bValue = b.cells[columnIndex].textContent.trim();
+                return aValue.localeCompare(bValue);
+            });
+
+            if (headerCell.classList.contains('asc')) {
+                sortedRows.reverse();
+                headerCell.classList.remove('asc');
+                headerCell.classList.add('desc');
+            } else {
+                headerCell.classList.remove('desc');
+                headerCell.classList.add('asc');
+            }
+
+            tableBody.append(...sortedRows);
+        });
+    });
+
+    // Agregar funcionalidad de Seleccionar Todos
+    const selectAll = document.getElementById('selectAll');
+    selectAll.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="productos[]"]:not([disabled])');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        actualizarSeleccion();
+    });
+});
+</script>
+{% endblock %}

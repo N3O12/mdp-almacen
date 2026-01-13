@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Préstamos - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Lista de Préstamos Activos -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Préstamos Activos</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Prestatario</th>
+                                <th>Fecha Préstamo</th>
+                                <th>Fecha Devolución</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prestamo in prestamos %}
+                            <tr>
+                                <td>{{ prestamo[1] }}</td>
+                                <td>{{ prestamo[2] }} {{ prestamo[3] }}</td>
+                                <td>{{ prestamo[4] }} {{ prestamo[5] }}</td>
+                                <td>{{ prestamo[6].strftime('%d/%m/%Y') }}</td>
+                                <td>{{ prestamo[7].strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <span class="badge bg-warning">Prestado</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-success btn-sm" 
+                                            onclick="marcarDevolucion('{{ prestamo[0] }}')">
+                                        Devolver
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Nuevo Préstamo -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Nuevo Préstamo</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="formPrestamo">
+                    <div class="mb-3">
+                        <label for="nombre_prestatario" class="form-label">Nombre del Solicitante</label>
+                        <input type="text" class="form-control" id="nombre_prestatario" 
+                               name="nombre_prestatario" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apellido_prestatario" class="form-label">Apellido del Solicitante</label>
+                        <input type="text" class="form-control" id="apellido_prestatario" 
+                               name="apellido_prestatario" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="producto" class="form-label">Producto</label>
+                        <select class="form-select" id="producto" name="producto_id" required>
+                            <option value="">Seleccione un producto</option>
+                            {% for producto in productos_disponibles %}
+                            <option value="{{ producto[0] }}" 
+                                    data-stock="{{ producto[3] }}"
+                                    data-unidad="{{ producto[4] }}">
+                                {{ producto[1] }} - Stock: {{ producto[3] }} {{ producto[4] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" 
+                                   id="cantidad" name="cantidad" required>
+                            <span class="input-group-text" id="unidad-medida"></span>
+                        </div>
+                        <div class="form-text">Stock disponible: <span id="stock-disponible">0</span></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fecha_devolucion" class="form-label">Fecha de Devolución Prevista</label>
+                        <input type="date" class="form-control" id="fecha_devolucion" 
+                               name="fecha_devolucion" required>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Registrar Préstamo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productoSelect = document.getElementById('producto');
+    const cantidadInput = document.getElementById('cantidad');
+    const unidadMedida = document.getElementById('unidad-medida');
+    const stockDisponible = document.getElementById('stock-disponible');
+    const fechaDevolucion = document.getElementById('fecha_devolucion');
+
+    // Establecer fecha mínima para devolución (día siguiente)
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    fechaDevolucion.min = manana.toISOString().split('T')[0];
+
+    // Actualizar información al seleccionar producto
+    productoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            const stock = selectedOption.dataset.stock;
+            const unidad = selectedOption.dataset.unidad;
+            
+            unidadMedida.textContent = unidad;
+            stockDisponible.textContent = `${stock} ${unidad}`;
+            cantidadInput.max = stock;
+        }
+    });
+
+    // Validar cantidad
+    cantidadInput.addEventListener('input', function() {
+        const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+        const stock = parseFloat(selectedOption.dataset.stock);
+        
+        if (this.value < 0) {
+            this.value = 0;
+        } else if (this.value > stock) {
+            this.value = stock;
+        }
+    });
+});
+
+function marcarDevolucion(prestamoId) {
+    if (confirm('¿Confirmar la devolución de este producto?')) {
+        fetch(`/prestamo/devolver/${prestamoId}`, {
+            method: 'POST',
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

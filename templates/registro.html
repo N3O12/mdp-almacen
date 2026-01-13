@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Iniciar Sesión - Almacén Municipal{% endblock %}
+{% block title %}Registro - Almacén Municipal{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md-6">
         <div class="info-card fade-in">
             <div class="card-header text-center">
-                <h4 class="title">Almacén Municipal</h4>
-                <p class="subtitle">Iniciar Sesión</p>
+                <h4 class="title">Registro de Usuario</h4>
+                <p class="subtitle">Complete los siguientes datos</p>
             </div>
             <div class="card-body">
                 {% if error %}
@@ -17,7 +17,27 @@
                 </div>
                 {% endif %}
                 
-                <form method="POST" action="{{ url_for('login') }}">
+                <form method="POST" action="{{ url_for('registro') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Apellido</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" name="apellido" class="form-control" required>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Correo Electrónico</label>
                         <div class="input-group">
@@ -40,18 +60,13 @@
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                            <i class="fas fa-user-plus"></i> Registrarse
                         </button>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Login
+                        </a>
                     </div>
                 </form>
-
-                <hr>
-                <div class="text-center">
-                    <p class="mb-0">¿No tienes una cuenta?</p>
-                    <a href="{{ url_for('registro') }}" class="btn btn-link">
-                        <i class="fas fa-user-plus"></i> Registrarse aquí
-                    </a>
-                </div>
             </div>
         </div>
     </div>
@@ -65,6 +80,7 @@
     border: none;
     padding: 2rem;
     margin-top: 2rem;
+    margin-bottom: 2rem;
 }
 
 .card-header {
@@ -90,10 +106,16 @@
     margin-bottom: 0.5rem;
 }
 
+.input-group {
+    margin-bottom: 1rem;
+}
+
 .input-group-text {
     background-color: var(--primary-color);
     border: none;
     color: var(--text-light);
+    width: 45px;
+    justify-content: center;
 }
 
 .form-control {
@@ -107,12 +129,15 @@
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
 
-.btn-primary {
-    background-color: var(--accent-color);
-    border: none;
+.btn {
     padding: 0.8rem;
     font-weight: 500;
     transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    border: none;
 }
 
 .btn-primary:hover {
@@ -120,22 +145,17 @@
     transform: translateY(-2px);
 }
 
-.btn-link {
-    color: var(--accent-color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.btn-outline-secondary {
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color);
+    background-color: transparent;
+    margin-top: 0.5rem;
 }
 
-.btn-link:hover {
-    color: var(--primary-color);
-    text-decoration: none;
+.btn-outline-secondary:hover {
+    background-color: var(--secondary-color);
+    color: var(--text-light);
     transform: translateY(-2px);
-}
-
-hr {
-    border-color: var(--light-color);
-    margin: 1.5rem 0;
 }
 
 .alert-danger {
@@ -143,6 +163,8 @@ hr {
     border: none;
     color: var(--danger-color);
     border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .fade-in {
@@ -157,6 +179,22 @@ hr {
     to { 
         opacity: 1; 
         transform: translateY(0); 
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .info-card {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .title {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
     }
 }
 </style>

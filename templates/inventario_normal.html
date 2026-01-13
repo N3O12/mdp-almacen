@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg rounded-lg border-0">
+    <div class="card-header custom-header py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h4 class="mb-0 text-white header-title">
+                <i class="fas fa-boxes me-2"></i>Inventario Actual
+            </h4>
+            <div class="d-flex gap-3 flex-wrap align-items-center">
+                <!-- Mantener estructura original con estilos mejorados -->
+                <div class="d-flex gap-2 align-items-center filter-group rounded p-2">
+                    <div class="input-group">
+                        <span class="input-group-text custom-input-group-text">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <input type="date" id="fechaInicio" class="form-control form-control-sm custom-input" 
+                               data-bs-toggle="tooltip" title="Fecha inicial"
+                               style="width: 130px;">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text custom-input-group-text">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <input type="date" id="fechaFin" class="form-control form-control-sm custom-input" 
+                               data-bs-toggle="tooltip" title="Fecha final"
+                               style="width: 130px;">
+                    </div>
+                </div>
+                
+                <!-- Resto de los filtros con estilos mejorados -->
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text custom-input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="buscarProducto" class="form-control form-control-sm custom-input" 
+                           placeholder="Buscar producto..."
+                           style="width: 200px;">
+                </div>
+                
+                <!-- Selectores con estilos unificados -->
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text custom-input-group-text">
+                        <i class="fas fa-tags"></i>
+                    </span>
+                    <select id="filtroCategoria" class="form-select form-select-sm custom-select">
+                        <option value="">Todas las categorías</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria[1] }}">{{ categoria[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Mantener estructura original de los demás selectores -->
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text custom-input-group-text">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </span>
+                    <select id="filtroProcedencia" class="form-select form-select-sm custom-select">
+                        <option value="">Todas las procedencias</option>
+                        {% for procedencia in procedencias %}
+                        <option value="{{ procedencia }}">{{ procedencia }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text custom-input-group-text">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                    <select id="filtroEstado" class="form-select form-select-sm custom-select">
+                        <option value="">Todos los estados</option>
+                        <option value="disponible">Disponible</option>
+                        <option value="prestado">Prestado</option>
+                        <option value="agotado">Agotado</option>
+                    </select>
+                </div>
+
+                <button type="button" id="btnLimpiarFiltros" class="btn btn-sm custom-button">
+                    <i class="fas fa-eraser me-1"></i>Limpiar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body custom-card-body">
+        {% if error %}
+        <div class="alert custom-alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+        </div>
+        {% endif %}
+        
+        <div class="table-responsive">
+            <table class="table custom-table" id="inventarioTable">
+                <thead>
+                    <tr>
+                        <!-- Mantener estructura original de la tabla -->
+                        <th class="text-nowrap"><i class="fas fa-barcode me-2"></i>Código</th>
+                        <th class="text-nowrap"><i class="fas fa-box me-2"></i>Nombre</th>
+                        <th><i class="fas fa-align-left me-2"></i>Descripción</th>
+                        <th class="text-nowrap"><i class="fas fa-cubes me-2"></i>Stock</th>
+                        <th class="text-nowrap"><i class="fas fa-ruler me-2"></i>U.M.</th>
+                        <th class="text-nowrap"><i class="fas fa-tag me-2"></i>Categoría</th>
+                        <th class="text-nowrap"><i class="fas fa-map-marker-alt me-2"></i>Procedencia</th>
+                        <th class="text-nowrap"><i class="fas fa-calendar-check me-2"></i>Fecha Ingreso</th>
+                        <th class="text-nowrap"><i class="fas fa-info-circle me-2"></i>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr class="custom-table-row">
+                        <!-- Mantener estructura original de las celdas -->
+                        <td class="text-center">{{ producto[1] }}</td>
+                        <td>{{ producto[2] }}</td>
+                        <td>{{ producto[3] }}</td>
+                        <td class="text-center fw-bold">{{ producto[4] }}</td>
+                        <td class="text-center">{{ producto[5] }}</td>
+                        <td>{{ producto[6] }}</td>
+                        <td>{{ producto[8] }}</td>
+                        <td class="text-center">
+                            <span class="badge custom-badge-secondary">
+                                <i class="far fa-clock me-1"></i>
+                                {{ producto[7] }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {% if producto[4] > 0 %}custom-badge-success{% else %}custom-badge-danger{% endif %}">
+                                <i class="fas {% if producto[4] > 0 %}fa-check{% else %}fa-times{% endif %} me-1"></i>
+                                {% if producto[4] > 0 %}Disponible{% else %}Agotado{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Función para filtrar la tabla
+    function filtrarTabla() {
+        const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value.toLowerCase();
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
+        const procedencia = document.getElementById('filtroProcedencia').value.toLowerCase();
+        const estado = document.getElementById('filtroEstado').value.toLowerCase();
+        
+        const filas = document.querySelectorAll('#inventarioTable tbody tr');
+        
+        filas.forEach(fila => {
+            const codigo = fila.cells[0].textContent.toLowerCase();
+            const nombre = fila.cells[1].textContent.toLowerCase();
+            const descripcion = fila.cells[2].textContent.toLowerCase();
+            const categoriaFila = fila.cells[5].textContent.toLowerCase();
+            const procedenciaFila = fila.cells[6].textContent.toLowerCase();
+            const fecha = fila.cells[7].querySelector('.badge').textContent.trim();
+            const estadoFila = fila.cells[8].querySelector('.badge').textContent.toLowerCase();
+            
+            // Convertir fecha de la fila a formato comparable
+            const [fechaParte] = fecha.split(' ');
+            const [dia, mes, anio] = fechaParte.split('/');
+            const fechaFila = new Date(`${anio}-${mes}-${dia}`);
+            
+            let mostrarPorBusqueda = true;
+            let mostrarPorCategoria = true;
+            let mostrarPorFecha = true;
+            let mostrarPorProcedencia = true;
+            let mostrarPorEstado = true;
+            
+            // Filtro de búsqueda
+            if (busqueda) {
+                mostrarPorBusqueda = codigo.includes(busqueda) || 
+                                   nombre.includes(busqueda) || 
+                                   descripcion.includes(busqueda) ||
+                                   procedenciaFila.includes(busqueda);
+            }
+            
+            // Filtro de categoría
+            if (categoria) {
+                mostrarPorCategoria = categoriaFila === categoria;
+            }
+            
+            // Filtro de procedencia
+            if (procedencia) {
+                mostrarPorProcedencia = procedenciaFila === procedencia;
+            }
+            
+            // Filtro de estado
+            if (estado) {
+                mostrarPorEstado = estadoFila.includes(estado);
+            }
+            
+            // Filtro de fechas
+            if (fechaInicio && fechaFin) {
+                const inicio = new Date(fechaInicio);
+                const fin = new Date(fechaFin);
+                fin.setHours(23, 59, 59);
+                mostrarPorFecha = fechaFila >= inicio && fechaFila <= fin;
+            }
+            
+            fila.style.display = (mostrarPorBusqueda && 
+                                mostrarPorCategoria && 
+                                mostrarPorFecha && 
+                                mostrarPorProcedencia && 
+                                mostrarPorEstado) ? '' : 'none';
+        });
+    }
+    
+    // Eventos para los filtros
+    document.getElementById('buscarProducto').addEventListener('keyup', filtrarTabla);
+    document.getElementById('filtroCategoria').addEventListener('change', filtrarTabla);
+    document.getElementById('fechaInicio').addEventListener('change', filtrarTabla);
+    document.getElementById('fechaFin').addEventListener('change', filtrarTabla);
+    document.getElementById('filtroProcedencia').addEventListener('change', filtrarTabla);
+    document.getElementById('filtroEstado').addEventListener('change', filtrarTabla);
+    
+    // Limpiar filtros
+    document.getElementById('btnLimpiarFiltros').addEventListener('click', function() {
+        document.getElementById('buscarProducto').value = '';
+        document.getElementById('filtroCategoria').value = '';
+        document.getElementById('fechaInicio').value = '';
+        document.getElementById('fechaFin').value = '';
+        document.getElementById('filtroProcedencia').value = '';
+        document.getElementById('filtroEstado').value = '';
+        filtrarTabla();
+    });
+});
+</script>
+
+<style>
+/* Estilos mejorados */
+.custom-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+}
+
+.header-title {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.filter-group {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.custom-input-group-text {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--accent-color);
+}
+
+.custom-input, .custom-select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus, .custom-select:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+.custom-button {
+    background: var(--light-color);
+    color: var(--primary-color);
+    border: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.custom-button:hover {
+    background: var(--accent-color);
+    color: var(--text-light);
+    transform: translateY(-2px);
+}
+
+.custom-table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.custom-table thead {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-light);
+}
+
+.custom-table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.custom-table-row {
+    transition: all 0.3s ease;
+}
+
+.custom-table-row:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.custom-badge-secondary {
+    background: var(--secondary-color);
+    border: none;
+    padding: 0.5em 0.8em;
+}
+
+.custom-badge-success {
+    background: var(--success-color);
+    border: none;
+    padding: 0.5em 0.8em;
+}
+
+.custom-badge-danger {
+    background: var(--danger-color);
+    border: none;
+    padding: 0.5em 0.8em;
+}
+
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Mantener estilos responsivos */
+@media (max-width: 768px) {
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .input-group {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Corrección para los menús desplegables */
+.form-select option {
+    background-color: white !important;
+    color: var(--text-dark) !important;
+}
+
+.custom-select {
+    color: var(--text-light) !important;
+}
+
+.custom-select:focus {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: var(--text-light) !important;
+}
+
+.custom-select option:checked {
+    background-color: var(--accent-color) !important;
+    color: var(--text-light) !important;
+}
+
+/* Asegurar que las opciones del select sean legibles */
+#filtroCategoria option,
+#filtroProcedencia option,
+#filtroEstado option {
+    background-color: white !important;
+    color: var(--text-dark) !important;
+    padding: 8px !important;
+}
+
+/* Estilo para el select cuando está abierto */
+.custom-select:focus option {
+    background-color: white !important;
+    color: var(--text-dark) !important;
+}
+
+/* Estilo para la opción seleccionada en el dropdown */
+.custom-select option:hover,
+.custom-select option:focus {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+}
+</style>
+{% endblock %}

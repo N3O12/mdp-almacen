@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Préstamo - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg border-0 rounded-lg">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <h4 class="text-white mb-0">
+            <i class="fas fa-handshake me-2"></i>Confirmar Préstamo
+        </h4>
+    </div>
+    <div class="card-body bg-light">
+        <form action="{{ url_for('procesar_prestamo') }}" method="POST" id="prestamoForm" class="needs-validation" novalidate>
+            <!-- Datos del prestatario -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-user me-2"></i>Datos del Solicitante</h5>
+                    <div class="mb-3">
+                        <label for="dni" class="form-label">DNI *</label>
+                        <input type="text" class="form-control custom-input" id="dni" name="dni" 
+                               required maxlength="8" pattern="[0-9]{8}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control custom-input" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="apellido" class="form-label">Apellido *</label>
+                        <input type="text" class="form-control custom-input" id="apellido" name="apellido" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono *</label>
+                        <input type="tel" class="form-control custom-input" id="telefono" name="telefono" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fechas con diseño mejorado -->
+            <div class="row g-4 mt-4">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="datetime-local" class="form-control custom-input" 
+                               name="fecha_prestamo" id="fechaPrestamo"
+                               value="{{ now.strftime('%Y-%m-%dT%H:%M') }}" required>
+                        <label for="fechaPrestamo">
+                            <i class="fas fa-calendar-plus me-2"></i>Fecha de Préstamo
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="datetime-local" class="form-control custom-input" 
+                               name="fecha_devolucion" id="fechaDevolucion"
+                               value="{{ now.strftime('%Y-%m-%dT%H:%M') }}" required
+                               min="{{ now.strftime('%Y-%m-%dT%H:%M') }}">
+                        <label for="fechaDevolucion">
+                            <i class="fas fa-calendar-minus me-2"></i>Fecha Planeada de Devolución
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nuevo campo para motivo de préstamo -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Motivo del Préstamo *</h5>
+                </div>
+                <div class="card-body">
+                    <textarea class="form-control custom-input" name="motivo_prestamo" required
+                              placeholder="Describa el motivo por el cual se solicitan los materiales"></textarea>
+                </div>
+            </div>
+
+            <!-- Tabla de productos con diseño mejorado -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>Productos Seleccionados</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Stock Disponible</th>
+                                    <th>Cantidad a Prestar</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in productos_seleccionados %}
+                                <tr>
+                                    <td>
+                                        {{ producto[1] }}
+                                        <input type="hidden" name="producto_id[]" 
+                                               value="{{ producto[0] }}">
+                                    </td>
+                                    <td>{{ producto[3] }} {{ producto[4] }}</td>
+                                    <td>
+                                        <input type="number" name="cantidad[]" 
+                                               class="form-control custom-input" required
+                                               min="0.01" max="{{ producto[3] }}"
+                                               step="0.01">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="observacion[]" 
+                                               class="form-control custom-input">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nueva sección de autorización -->
+            <div class="row g-4 mt-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary bg-opacity-10">
+                            <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Autorizado Por *</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control custom-input" id="autorizado_por" 
+                                       name="autorizado_por" required
+                                       placeholder="Nombre de quien autoriza">
+                                <label for="autorizado_por"><i class="fas fa-user me-2"></i>Autorizado Por *</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary bg-opacity-10">
+                            <h5 class="mb-0"><i class="fas fa-comment-dots me-2"></i>Observación de Autorización</h5>
+                        </div>
+                        <div class="card-body">
+                            <textarea class="form-control custom-input" id="observacion_autorizacion" 
+                                      name="observacion_autorizacion" rows="2"
+                                      placeholder="Observaciones adicionales sobre la autorización"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{{ url_for('prestamo_nuevo') }}" class="btn btn-secondary custom-button">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </a>
+                <button type="submit" class="btn btn-primary custom-button">
+                    <i class="fas fa-check me-2"></i>Confirmar Préstamo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal con diseño mejorado -->
+<div class="modal fade" id="confirmacionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Confirmar Préstamo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-3">Por favor, revise los datos antes de confirmar:</h6>
+                
+                <!-- Datos del Solicitante -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Datos del Solicitante</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>DNI:</strong> <span id="preview-dni"></span></p>
+                                <p><strong>Nombre:</strong> <span id="preview-nombre"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Teléfono:</strong> <span id="preview-telefono"></span></p>
+                                <p><strong>Autorizado por:</strong> <span id="preview-autorizado"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fechas -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Fechas</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Fecha de Préstamo:</strong> <span id="preview-fecha-prestamo"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Fecha de Devolución:</strong> <span id="preview-fecha-devolucion"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Productos -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Productos a Prestar</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Observación</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="preview-productos">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Motivo y Observaciones -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Información Adicional</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Motivo del Préstamo:</strong> <span id="preview-motivo"></span></p>
+                        <p><strong>Observación de Autorización:</strong> <span id="preview-obs-autorizacion"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarPrestamo">
+                    <i class="fas fa-check"></i> Confirmar Préstamo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos personalizados */
+.custom-input {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+}
+
+.form-floating > label {
+    padding-left: 1rem;
+    color: var(--text-muted);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--primary-color);
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.custom-button {
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table th {
+    background-color: var(--light);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.modal-content {
+    border: none;
+    border-radius: 12px;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .row.g-4 {
+        gap: 1rem !important;
+    }
+    
+    .custom-button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación de DNI
+    const dniInput = document.getElementById('dni');
+    dniInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
+    });
+    
+    const fechaPrestamo = document.querySelector('input[name="fecha_prestamo"]');
+    const fechaDevolucion = document.querySelector('input[name="fecha_devolucion"]');
+
+    // Validar que la fecha de devolución sea posterior a la de préstamo
+    fechaDevolucion.addEventListener('change', function() {
+        if (fechaPrestamo.value && this.value) {
+            if (new Date(this.value) <= new Date(fechaPrestamo.value)) {
+                alert('La fecha de devolución debe ser posterior a la fecha de préstamo');
+                this.value = '';
+            }
+        }
+    });
+
+    // Modificar el evento submit del formulario
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Actualizar la previsualización
+        document.getElementById('preview-dni').textContent = form.dni.value;
+        document.getElementById('preview-nombre').textContent = 
+            `${form.nombre.value} ${form.apellido.value}`;
+        document.getElementById('preview-telefono').textContent = form.telefono.value;
+        document.getElementById('preview-autorizado').textContent = form.autorizado_por.value;
+        
+        // Formatear fechas
+        const fechaPrestamo = new Date(form.fecha_prestamo.value);
+        const fechaDevolucion = new Date(form.fecha_devolucion.value);
+        document.getElementById('preview-fecha-prestamo').textContent = 
+            fechaPrestamo.toLocaleString();
+        document.getElementById('preview-fecha-devolucion').textContent = 
+            fechaDevolucion.toLocaleString();
+        
+        // Productos
+        const productosTable = document.getElementById('preview-productos');
+        productosTable.innerHTML = '';
+        const productos = document.querySelectorAll('table tbody tr');
+        productos.forEach(producto => {
+            const nombre = producto.querySelector('td:first-child').textContent.trim();
+            const cantidad = producto.querySelector('input[name="cantidad[]"]').value;
+            const observacion = producto.querySelector('input[name="observacion[]"]').value;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${nombre}</td>
+                <td>${cantidad}</td>
+                <td>${observacion || '-'}</td>
+            `;
+            productosTable.appendChild(tr);
+        });
+        
+        document.getElementById('preview-motivo').textContent = form.motivo_prestamo.value;
+        document.getElementById('preview-obs-autorizacion').textContent = 
+            form.observacion_autorizacion.value || 'Ninguna';
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
+        modal.show();
+    });
+
+    // Manejar la confirmación
+    document.getElementById('btnConfirmarPrestamo').addEventListener('click', function() {
+        const form = document.querySelector('form');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmacionModal'));
+        modal.hide();
+        
+        // Enviar el formulario normalmente para permitir la descarga del documento
+        form.submit();
+        
+        // Redirigir después de un breve delay para permitir la descarga
+        setTimeout(function() {
+            window.location.href = "{{ url_for('index') }}";
+        }, 2000); // Esperar 2 segundos para asegurar que el documento se descargue
+    });
+});
+</script>
+{% endblock %}

@@ -1,30 +1,109 @@
 {% extends "base.html" %}
 
-{% block contenido %}
-<div class="inicio-container">
-    <div class="inicio-background"></div>
-    <div class="inicio-section">
-        <div class="inicio-content">
-            <h1>Sistema de Reparto</h1>
-            <p>Soluciones eficientes para la gestión y distribución de pedidos</p>
+{% block title %}Inicio - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <div class="hero-section text-center text-white py-5">
+        <div class="overlay"></div>
+        <div class="content position-relative">
+            <img src="{{ url_for('static', filename='img/logo_pias.png') }}" alt="Logo Municipal" class="mb-4" style="max-width: 150px;">
+            <h1 class="display-3 mb-4">Sistema de Almacén</h1>
+            <h2 class="h3 mb-4">MUNICIPALIDAD DISTRITAL DE PIÁS</h2>
+            <p class="lead mb-0">Gestión eficiente de recursos municipales</p>
         </div>
-        <div class="inicio-features">
-            <div class="inicio-card">
-                <i class="fas fa-truck-fast"></i>
-                <h3>Entregas Rápidas</h3>
-                <p>Gestión eficiente de pedidos y entregas en tiempo real</p>
+    </div>
+
+    <!-- Accesos Rápidos -->
+    <div class="container mt-5">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <a href="{{ url_for('inventario') }}" class="text-decoration-none">
+                    <div class="card quick-access-card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-boxes fa-3x mb-3 text-primary"></i>
+                            <h3 class="card-title">Inventario</h3>
+                            <p class="card-text text-muted">Gestionar productos</p>
+                        </div>
+                    </div>
+                </a>
             </div>
-            <div class="inicio-card">
-                <i class="fas fa-map-location-dot"></i>
-                <h3>Seguimiento</h3>
-                <p>Control total sobre el estado de tus envíos</p>
+            <div class="col-md-4">
+                <a href="{{ url_for('prestamo_nuevo') }}" class="text-decoration-none">
+                    <div class="card quick-access-card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-hand-holding fa-3x mb-3 text-success"></i>
+                            <h3 class="card-title">Préstamo Nuevo</h3>
+                            <p class="card-text text-muted">Registrar préstamo</p>
+                        </div>
+                    </div>
+                </a>
             </div>
-            <div class="inicio-card">
-                <i class="fas fa-headset"></i>
-                <h3>Soporte 24/7</h3>
-                <p>Atención al cliente disponible en todo momento</p>
+            <div class="col-md-4">
+                <a href="{{ url_for('reportes') }}" class="text-decoration-none">
+                    <div class="card quick-access-card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x mb-3 text-info"></i>
+                            <h3 class="card-title">Reportes</h3>
+                            <p class="card-text text-muted">Ver estadísticas</p>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.hero-section {
+    position: relative;
+    background-image: url("{{ url_for('static', filename='img/pias_hero.jpg') }}");
+    background-size: cover;
+    background-position: center;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-section .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.quick-access-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-access-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+    color: #333;
+    font-weight: 600;
+}
+
+.hero-section h1 {
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-section h2 {
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.hero-section p {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+</style>
 {% endblock %}

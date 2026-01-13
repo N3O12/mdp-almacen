@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Selección de Combustible - Almacén{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                    <h4 class="mb-0 text-white">
+                        <i class="fas fa-gas-pump me-2"></i>Selección de Combustible
+                    </h4>
+                </div>
+                <div class="card-body bg-light py-5">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('salida_gasolina') }}" 
+                               class="card fuel-card text-decoration-none">
+                                <div class="card-body text-center p-5">
+                                    <div class="icon-container mb-3">
+                                        <i class="fas fa-gas-pump fa-3x text-primary"></i>
+                                    </div>
+                                    <h3 class="text-primary mb-0">Gasolina</h3>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('salida_petroleo') }}" 
+                               class="card fuel-card text-decoration-none">
+                                <div class="card-body text-center p-5">
+                                    <div class="icon-container mb-3">
+                                        <i class="fas fa-oil-can fa-3x text-dark"></i>
+                                    </div>
+                                    <h3 class="text-dark mb-0">Petróleo</h3>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.fuel-card {
+    border: 2px solid transparent;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background: white;
+    height: 100%;
+}
+
+.fuel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.fuel-card:first-child:hover {
+    border-color: var(--primary);
+}
+
+.fuel-card:last-child:hover {
+    border-color: var(--dark);
+}
+
+.icon-container {
+    background: var(--light);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.fuel-card:hover .icon-container {
+    transform: scale(1.1);
+}
+
+.card-header {
+    border-bottom: 0;
+    padding: 1.5rem;
+}
+
+.card {
+    overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .card-body {
+        padding: 2rem 1rem;
+    }
+    
+    .fuel-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

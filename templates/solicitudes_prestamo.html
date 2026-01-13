@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card-header" style="background: linear-gradient(135deg, #4e73df, #224abe);">
+            <h2 class="text-white mb-0">
+                <i class="fas fa-hand-holding me-2"></i>Solicitudes de Préstamo
+            </h2>
+        </div>
+        
+        <div class="card-body bg-light">
+            <!-- Filtros mejorados -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" id="searchInput" class="form-control custom-input" 
+                               placeholder="Buscar...">
+                        <label>Buscar por nombre, DNI o productos</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <input type="date" id="fechaInicio" class="form-control custom-input">
+                        <label>Fecha inicio</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <input type="date" id="fechaFin" class="form-control custom-input">
+                        <label>Fecha fin</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select id="estadoFilter" class="form-control custom-input">
+                            <option value="">Todos los estados</option>
+                            <option value="Activo">Activo</option>
+                            <option value="Vencido">Vencido</option>
+                            <option value="Devuelto">Devuelto</option>
+                        </select>
+                        <label>Estado</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-secondary w-100 h-100 custom-btn" onclick="clearFilters()">
+                        <i class="fas fa-sync-alt me-2"></i>Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla mejorada -->
+            <div class="table-responsive">
+                <table class="table table-hover custom-table" id="solicitudesTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                            <th><i class="fas fa-hashtag me-2"></i>N° Préstamo</th>
+                            <th><i class="fas fa-user me-2"></i>Solicitante</th>
+                            <th><i class="fas fa-id-card me-2"></i>DNI</th>
+                            <th><i class="fas fa-phone me-2"></i>Teléfono</th>
+                            <th><i class="fas fa-box me-2"></i>Productos</th>
+                            <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                            <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in solicitudes %}
+                        <tr data-fecha="{{ s[2].strftime('%Y-%m-%d') }}">
+                            <td>{{ s[2].strftime('%d/%m/%Y') }}</td>
+                            <td>{{ '%04d' % s[1] }}</td>
+                            <td>{{ s[3] }} {{ s[4] }}</td>
+                            <td>{{ s[5] }}</td>
+                            <td>{{ s[6] }}</td>
+                            <td>{{ s[7] }}</td>
+                            <td>
+                                <span class="badge {% if s[8] == 'Activo' %}bg-primary{% elif s[8] == 'Vencido' %}bg-danger{% else %}bg-success{% endif %}">
+                                    {{ s[8] }}
+                                </span>
+                                <br>
+                                <small>{{ s[9].strftime('%d/%m/%Y') }}</small>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('descargar_solicitud_prestamo', id_prestamo=s[0], numero_secuencial=s[1]) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-download"></i> Descargar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-input {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.25);
+}
+
+.custom-btn {
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.custom-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.custom-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.custom-table thead {
+    background: linear-gradient(135deg, #f8f9fc, #f1f3f9);
+}
+
+.custom-table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #4e73df;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(78,115,223,0.05);
+    transform: scale(1.01);
+}
+
+.badge {
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.form-floating label {
+    padding: 0.75rem;
+}
+
+#resultsCounter {
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #e8f0fe, #f8f9fc);
+    color: #4e73df;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .custom-btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+    const estadoFilter = document.getElementById('estadoFilter');
+    const table = document.getElementById('solicitudesTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    function filterTable() {
+        const searchText = searchInput.value.toLowerCase();
+        const startDate = fechaInicio.value ? new Date(fechaInicio.value) : null;
+        const endDate = fechaFin.value ? new Date(fechaFin.value) : null;
+        const estadoValue = estadoFilter.value.toLowerCase();
+
+        // Si no hay filtros activos, ocultar el contador
+        if (!searchText && !startDate && !endDate && !estadoValue) {
+            const existingCounter = document.getElementById('resultsCounter');
+            if (existingCounter) {
+                existingCounter.remove();
+            }
+            return;
+        }
+
+        let visibleCount = 0;
+
+        Array.from(rows).forEach(row => {
+            const rowDate = new Date(row.dataset.fecha);
+            const solicitante = row.cells[2].textContent.toLowerCase();
+            const dni = row.cells[3].textContent.toLowerCase();
+            const productos = row.cells[5].textContent.toLowerCase();
+            const estado = row.cells[6].textContent.toLowerCase();
+            
+            const matchesSearch = !searchText || 
+                solicitante.includes(searchText) || 
+                dni.includes(searchText) || 
+                productos.includes(searchText);
+
+            const matchesDate = (!startDate || rowDate >= startDate) && 
+                              (!endDate || rowDate <= endDate);
+
+            const matchesEstado = !estadoValue || estado.includes(estadoValue);
+            
+            const isVisible = matchesSearch && matchesDate && matchesEstado;
+            row.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleCount++;
+        });
+
+        // Mostrar el contador solo cuando hay filtros activos
+        let counter = document.getElementById('resultsCounter');
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'resultsCounter';
+            counter.className = 'alert alert-info mt-2';
+            table.parentNode.insertBefore(counter, table);
+        }
+        counter.innerHTML = `<i class="fas fa-info-circle me-2"></i>Mostrando ${visibleCount} de ${rows.length} registros`;
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterTable);
+    fechaInicio.addEventListener('change', filterTable);
+    fechaFin.addEventListener('change', filterTable);
+    estadoFilter.addEventListener('change', filterTable);
+
+    // Validación de fechas
+    fechaInicio.addEventListener('change', function() {
+        if (fechaFin.value && this.value > fechaFin.value) {
+            alert('La fecha de inicio no puede ser posterior a la fecha fin');
+            this.value = '';
+        }
+        filterTable();
+    });
+
+    fechaFin.addEventListener('change', function() {
+        if (fechaInicio.value && this.value < fechaInicio.value) {
+            alert('La fecha fin no puede ser anterior a la fecha inicio');
+            this.value = '';
+        }
+        filterTable();
+    });
+});
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('fechaInicio').value = '';
+    document.getElementById('fechaFin').value = '';
+    document.getElementById('estadoFilter').value = '';
+    
+    const table = document.getElementById('solicitudesTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    Array.from(rows).forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Eliminar el contador al limpiar filtros
+    const counter = document.getElementById('resultsCounter');
+    if (counter) {
+        counter.remove();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Salida de Productos - Almacén Municipal{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg border-0 rounded-lg">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <h4 class="text-white mb-0">
+            <i class="fas fa-box-open me-2"></i>Confirmar Salida de Productos
+        </h4>
+    </div>
+    
+    <div class="card-body bg-light">
+        <form action="{{ url_for('procesar_salida') }}" method="POST" id="formSalida" class="needs-validation" novalidate>
+            <!-- Datos del solicitante -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Datos del Solicitante</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" name="nombre" class="form-control custom-input" id="nombreSolicitante" required>
+                                <label for="nombreSolicitante">Nombre del Solicitante</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" name="apellido" class="form-control custom-input" id="apellidoSolicitante" required>
+                                <label for="apellidoSolicitante">Apellidos del Solicitante</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" name="dni" class="form-control custom-input" id="dniSolicitante" 
+                                       pattern="[0-9]{8}" maxlength="8" required
+                                       title="Ingrese un DNI válido de 8 dígitos">
+                                <label for="dniSolicitante">DNI</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" name="telefono" class="form-control custom-input" id="telefonoSolicitante" required>
+                                <label for="telefonoSolicitante">Teléfono</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos de autorización -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-file-signature me-2"></i>Datos de Autorización</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" name="autorizado_por" class="form-control custom-input" id="autorizadoSolicitante" required>
+                                <label for="autorizadoSolicitante">Autorizado por</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" name="area" class="form-control custom-input" id="areaSolicitante" required>
+                                <label for="areaSolicitante">Área/Oficina</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="datetime-local" name="fecha_salida" class="form-control custom-input" id="fechaSalidaSolicitante" 
+                                       required value="{{ now.strftime('%Y-%m-%dT%H:%M') }}">
+                                <label for="fechaSalidaSolicitante">Fecha de Salida</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" name="motivo" class="form-control custom-input" id="motivoSolicitante" required>
+                                <label for="motivoSolicitante">Motivo de Salida</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observación de autorización -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-comment me-2"></i>Observación de Autorización</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-floating">
+                        <textarea name="observacion_autorizacion" class="form-control custom-input" id="observacionSolicitante" rows="3"></textarea>
+                        <label for="observacionSolicitante">Observación de Autorización</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos seleccionados -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Productos Seleccionados</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle custom-table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-barcode me-2"></i>Código</th>
+                                    <th><i class="fas fa-box me-2"></i>Producto</th>
+                                    <th><i class="fas fa-warehouse me-2"></i>Stock</th>
+                                    <th><i class="fas fa-shopping-cart me-2"></i>Cantidad</th>
+                                    <th><i class="fas fa-ruler me-2"></i>U.M.</th>
+                                    <th><i class="fas fa-comment me-2"></i>Observación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in productos_seleccionados %}
+                                <tr>
+                                    <td>
+                                        {{ producto[1] }}
+                                        <input type="hidden" name="producto_id[]" value="{{ producto[0] }}">
+                                    </td>
+                                    <td>{{ producto[2] }}</td>
+                                    <td>{{ producto[3] }} {{ producto[4] }}</td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="number" name="cantidad[]" 
+                                                   class="form-control cantidad-input" required
+                                                   min="0.01" max="{{ producto[3] }}"
+                                                   step="0.01"
+                                                   data-stock="{{ producto[3] }}">
+                                            <span class="input-group-text">{{ producto[4] }}</span>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            La cantidad no puede superar el stock disponible
+                                        </div>
+                                    </td>
+                                    <td>{{ producto[4] }}</td>
+                                    <td>
+                                        <textarea name="observacion[]" class="form-control" 
+                                                  rows="2" placeholder="Observación específica del producto"></textarea>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <a href="{{ url_for('salida_producto') }}" class="btn btn-secondary btn-lg me-2 custom-button">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg custom-button">
+                    <i class="fas fa-check me-2"></i>Confirmar Salida
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Agregar el modal de confirmación antes del script -->
+<div class="modal fade" id="confirmacionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Confirmar Salida de Productos</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-3">Por favor, revise los datos antes de confirmar:</h6>
+                
+                <!-- Datos del Solicitante -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Datos del Solicitante</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Nombre:</strong> <span id="preview-nombre"></span></p>
+                                <p><strong>DNI:</strong> <span id="preview-dni"></span></p>
+                                <p><strong>Teléfono:</strong> <span id="preview-telefono"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Autorizado por:</strong> <span id="preview-autorizado"></span></p>
+                                <p><strong>Área/Oficina:</strong> <span id="preview-area"></span></p>
+                                <p><strong>Fecha de Salida:</strong> <span id="preview-fecha"></span></p>
+                                <p><strong>Motivo:</strong> <span id="preview-motivo"></span></p>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <p><strong>Observación:</strong> <span id="preview-observacion"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Productos -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Productos a Retirar</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>U.M.</th>
+                                        <th>Observación</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="preview-productos">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarSalida">
+                    <i class="fas fa-check"></i> Confirmar Salida
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-input {
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+    border-color: var(--primary-color);
+}
+
+.custom-button {
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+}
+
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table thead th {
+    background-color: var(--light);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(var(--primary-rgb), 0.05);
+    transform: scale(1.01);
+}
+
+.form-floating > label {
+    padding-left: 1rem;
+    color: var(--text-muted);
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+    color: var(--danger);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .row.g-3 {
+        gap: 1rem !important;
+    }
+    
+    .custom-button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .custom-table {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación de DNI
+    const dniInput = document.querySelector('input[name="dni"]');
+    dniInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
+    });
+
+    // Validación de cantidades
+    document.querySelectorAll('.cantidad-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const stock = parseFloat(this.dataset.stock);
+            const cantidad = parseFloat(this.value);
+            
+            if (cantidad > stock) {
+                this.value = stock;
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+
+    // Modificar el evento submit del formulario
+    const form = document.getElementById('formSalida');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validar cantidades primero
+        let valid = true;
+        this.querySelectorAll('.cantidad-input').forEach(input => {
+            if (parseFloat(input.value) > parseFloat(input.dataset.stock)) {
+                input.classList.add('is-invalid');
+                valid = false;
+            }
+        });
+
+        if (!valid) {
+            alert('Por favor, corrija las cantidades que exceden el stock disponible.');
+            return;
+        }
+
+        // Actualizar la previsualización
+        document.getElementById('preview-nombre').textContent = 
+            `${form.nombre.value} ${form.apellido.value}`;
+        document.getElementById('preview-dni').textContent = form.dni.value;
+        document.getElementById('preview-telefono').textContent = form.telefono.value;
+        document.getElementById('preview-autorizado').textContent = form.autorizado_por.value;
+        document.getElementById('preview-area').textContent = form.area.value;
+        const fechaSalida = new Date(form.fecha_salida.value);
+        const fechaFormateada = fechaSalida.toLocaleString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        document.getElementById('preview-fecha').textContent = fechaFormateada;
+        document.getElementById('preview-motivo').textContent = form.motivo.value;
+        document.getElementById('preview-observacion').textContent = 
+            form.observacion_autorizacion.value || 'Ninguna';
+
+        // Productos
+        const productosTable = document.getElementById('preview-productos');
+        productosTable.innerHTML = '';
+        const productos = document.querySelectorAll('table tbody tr');
+        productos.forEach(producto => {
+            const codigo = producto.cells[0].textContent.trim();
+            const nombre = producto.cells[1].textContent.trim();
+            const cantidad = producto.querySelector('input[name="cantidad[]"]').value;
+            const unidad = producto.cells[4].textContent.trim();
+            const observacion = producto.querySelector('textarea[name="observacion[]"]').value;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${codigo}</td>
+                <td>${nombre}</td>
+                <td>${cantidad}</td>
+                <td>${unidad}</td>
+                <td>${observacion || '-'}</td>
+            `;
+            productosTable.appendChild(tr);
+        });
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
+        modal.show();
+    });
+
+    // Manejar la confirmación
+    document.getElementById('btnConfirmarSalida').addEventListener('click', function() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmacionModal'));
+        modal.hide();
+        form.submit();
+        setTimeout(function() {
+            window.location.href = "{{ url_for('index') }}";
+        }, 1000);
+    });
+});
+</script>
+{% endblock %}

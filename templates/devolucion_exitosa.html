@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Devolución Exitosa{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card success-card">
+        <div class="card-body text-center">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="mt-4 mb-3">¡Devolución Exitosa!</h2>
+            <p class="lead mb-4">El préstamo #{{ prestamo_id }} ha sido devuelto correctamente</p>
+            <div class="mt-4">
+                <a href="{{ url_for('prestamos_activos') }}" class="btn btn-primary">
+                    <i class="fas fa-list me-2"></i>Ver Préstamos Activos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-card {
+    max-width: 500px;
+    margin: 0 auto;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.success-icon {
+    font-size: 5rem;
+    color: #28a745;
+    animation: scaleIn 0.5s ease;
+}
+
+.success-icon i {
+    filter: drop-shadow(0 2px 5px rgba(40, 167, 69, 0.2));
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.btn {
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #333;
+    font-weight: 600;
+}
+
+.lead {
+    color: #666;
+}
+</style>
+{% endblock %}

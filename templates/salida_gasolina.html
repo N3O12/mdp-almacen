@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}Salida de Gasolina - Almacén{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                    <h4 class="mb-0 text-white">
+                        <i class="fas fa-gas-pump me-2"></i>Registro de Salida de Gasolina
+                    </h4>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="POST" action="{{ url_for('salida_gasolina') }}" class="needs-validation" novalidate>
+                        <!-- Secciones del formulario -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary bg-opacity-10">
+                                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Datos del Solicitante</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Campos del solicitante con form-floating -->
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control custom-input" 
+                                                   id="nombreSolicitante" name="nombre_solicitante" required>
+                                            <label for="nombreSolicitante">Nombre del Solicitante</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control custom-input" 
+                                                   id="apellidoSolicitante" name="apellido_solicitante" required>
+                                            <label for="apellidoSolicitante">Apellidos del Solicitante</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control custom-input" 
+                                                   id="dni" name="dni" required maxlength="8" pattern="[0-9]{8}">
+                                            <label for="dni">DNI</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control custom-input" 
+                                                   id="autorizadoPor" name="autorizado_por" required>
+                                            <label for="autorizadoPor">Autorizado por</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="date" class="form-control custom-input" 
+                                                   id="fechaSalida" name="fecha_salida" value="{{ fecha_actual }}" required>
+                                            <label for="fechaSalida">Fecha de Salida</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="time" class="form-control custom-input" 
+                                                   id="horaSalida" name="hora_salida" value="{{ hora_actual }}" required>
+                                            <label for="horaSalida">Hora de Salida</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección de Vehículo -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary bg-opacity-10">
+                                <h5 class="mb-0"><i class="fas fa-car me-2"></i>Datos del Vehículo</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control custom-input" 
+                                                   id="placa" name="placa" required>
+                                            <label for="placa">Placa de movilidad</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <select class="form-select custom-input" id="unidad" name="unidad" required>
+                                                <option value="">Seleccione una unidad</option>
+                                                <option value="Motor">Motor</option>
+                                                <option value="Moto lineal">Moto lineal</option>
+                                            </select>
+                                            <label for="unidad">Unidad</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección de Combustible -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary bg-opacity-10">
+                                <h5 class="mb-0"><i class="fas fa-gas-pump me-2"></i>Detalles del Combustible</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="form-floating">
+                                            <select class="form-select custom-input" id="producto" name="id_producto" required>
+                                                <option value="">Seleccione un producto</option>
+                                                {% for producto in productos %}
+                                                    <option value="{{ producto.id_producto }}" 
+                                                            data-stock="{{ producto.cantidad }}"
+                                                            data-unidad="{{ producto.unidad_medida }}">
+                                                        {{ producto.codigo }} - {{ producto.nombre }} (Stock: {{ producto.cantidad }} {{ producto.unidad_medida }})
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="producto">Producto</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control custom-input" 
+                                                   id="cantidad" name="cantidad" required step="0.01" min="0.01">
+                                            <label for="cantidad">Cantidad</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating">
+                                            <select class="form-select custom-input" id="area" name="area" required>
+                                                <option value="">Seleccione un área</option>
+                                                {% for area in areas %}
+                                                    <option value="{{ area.area }}" style="color: #000;">{{ area.area }}</option>
+                                                {% endfor %}
+                                                <option value="nueva" style="color: #0d6efd;">+ Agregar Nueva Área</option>
+                                            </select>
+                                            <label for="area">Área Usuaria</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12" id="nuevaAreaDiv" style="display: none;">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="nuevaArea" 
+                                                   placeholder="Ingrese el nombre de la nueva área">
+                                            <button class="btn btn-primary" type="button" id="btnGuardarArea">
+                                                <i class="fas fa-save me-1"></i>Guardar Área
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-floating">
+                                            <textarea class="form-control custom-input" id="motivo_salida" 
+                                                      name="motivo_salida" required style="height: 100px"></textarea>
+                                            <label for="motivo_salida">Motivo de Salida</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-floating">
+                                            <textarea class="form-control custom-input" id="observacion" 
+                                                      name="observacion" style="height: 100px"></textarea>
+                                            <label for="observacion">Observaciones (Opcional)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control custom-input" 
+                                                   id="destino" name="destino" required>
+                                            <label for="destino">Destino</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{{ url_for('index') }}" class="btn btn-light btn-lg px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-save me-2"></i>Registrar Salida
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal mejorado -->
+<div class="modal fade" id="confirmacionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Confirmar Salida de Gasolina</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-3">Por favor, revise los datos antes de confirmar:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Solicitante:</strong> <span id="preview-solicitante"></span></p>
+                        <p><strong>DNI:</strong> <span id="preview-dni"></span></p>
+                        <p><strong>Autorizado por:</strong> <span id="preview-autorizado"></span></p>
+                        <p><strong>Fecha y Hora:</strong> <span id="preview-fecha"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Placa:</strong> <span id="preview-placa"></span></p>
+                        <p><strong>Unidad:</strong> <span id="preview-unidad"></span></p>
+                        <p><strong>Producto:</strong> <span id="preview-producto"></span></p>
+                        <p><strong>Cantidad:</strong> <span id="preview-cantidad"></span></p>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <p><strong>Área:</strong> <span id="preview-area"></span></p>
+                        <p><strong>Motivo:</strong> <span id="preview-motivo"></span></p>
+                        <p><strong>Destino:</strong> <span id="preview-destino"></span></p>
+                        <p><strong>Observación:</strong> <span id="preview-observacion"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarSalida">
+                    <i class="fas fa-check"></i> Confirmar Salida
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-input {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+}
+
+.form-floating > label {
+    padding: 0.5rem 0.75rem;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Estilos para el select y sus opciones */
+.form-select {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+
+.form-select option {
+    color: #212529 !important;
+    background-color: #fff !important;
+    padding: 8px !important;
+}
+
+.form-select option:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Asegurar contraste en el formulario floating */
+.form-floating > .form-select {
+    color: #212529 !important;
+}
+
+.form-floating > .form-select option {
+    color: #212529 !important;
+}
+
+/* Estilo para la opción de nueva área */
+.form-select option[value="nueva"] {
+    font-weight: bold;
+    color: #0d6efd !important;
+}
+
+/* Asegurar visibilidad del texto seleccionado */
+.form-select:focus {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const areaSelect = document.getElementById('area');
+    const nuevaAreaDiv = document.getElementById('nuevaAreaDiv');
+    const nuevaAreaInput = document.getElementById('nuevaArea');
+    const btnGuardarArea = document.getElementById('btnGuardarArea');
+    const productoSelect = document.getElementById('producto');
+    const cantidadInput = document.getElementById('cantidad');
+    const stockDisponible = document.getElementById('stock_disponible');
+
+    areaSelect.addEventListener('change', function() {
+        if (this.value === 'nueva') {
+            nuevaAreaDiv.style.display = 'block';
+            nuevaAreaInput.focus();
+            this.required = false;
+        } else {
+            nuevaAreaDiv.style.display = 'none';
+            this.required = true;
+        }
+    });
+
+    btnGuardarArea.addEventListener('click', function() {
+        const nuevaArea = nuevaAreaInput.value.trim().toUpperCase();
+        if (nuevaArea) {
+            fetch('/agregar_area', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ area: nuevaArea })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const option = new Option(nuevaArea, nuevaArea);
+                    areaSelect.insertBefore(option, areaSelect.lastChild);
+                    areaSelect.value = nuevaArea;
+                    nuevaAreaInput.value = '';
+                    nuevaAreaDiv.style.display = 'none';
+                    areaSelect.required = true;
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar el área');
+            });
+        } else {
+            alert('Por favor ingrese un nombre de área');
+        }
+    });
+
+    // Función para actualizar el mensaje de stock disponible
+    function actualizarStockDisponible() {
+        const selectedOption = productoSelect.selectedOptions[0];
+        if (selectedOption.value) {
+            const stock = parseFloat(selectedOption.dataset.stock);
+            const unidad = selectedOption.dataset.unidad;
+            stockDisponible.textContent = `Stock disponible: ${stock} ${unidad}`;
+            cantidadInput.max = stock;
+            
+            // Validar la cantidad actual
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            if (cantidad > stock) {
+                cantidadInput.value = stock;
+            }
+        } else {
+            stockDisponible.textContent = '';
+            cantidadInput.removeAttribute('max');
+        }
+    }
+
+    // Evento cuando cambia el producto seleccionado
+    productoSelect.addEventListener('change', actualizarStockDisponible);
+
+    // Validar cantidad al escribir
+    cantidadInput.addEventListener('input', function() {
+        const selectedOption = productoSelect.selectedOptions[0];
+        if (selectedOption.value) {
+            const stock = parseFloat(selectedOption.dataset.stock);
+            const cantidad = parseFloat(this.value) || 0;
+            
+            if (cantidad > stock) {
+                alert(`La cantidad no puede superar el stock disponible (${stock})`);
+                this.value = stock;
+            } else if (cantidad <= 0) {
+                this.value = '';
+            }
+        }
+    });
+
+    // Modificar el evento submit del formulario
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Actualizar la previsualización
+        document.getElementById('preview-solicitante').textContent = 
+            `${form.nombre_solicitante.value} ${form.apellido_solicitante.value}`;
+        document.getElementById('preview-dni').textContent = form.dni.value;
+        document.getElementById('preview-autorizado').textContent = form.autorizado_por.value;
+        document.getElementById('preview-fecha').textContent = 
+            `${form.fecha_salida.value} ${form.hora_salida.value}`;
+        document.getElementById('preview-placa').textContent = form.placa.value;
+        document.getElementById('preview-unidad').textContent = form.unidad.value;
+        document.getElementById('preview-producto').textContent = 
+            productoSelect.selectedOptions[0].text;
+        document.getElementById('preview-cantidad').textContent = 
+            `${form.cantidad.value} ${productoSelect.selectedOptions[0].dataset.unidad}`;
+        document.getElementById('preview-area').textContent = form.area.value;
+        document.getElementById('preview-motivo').textContent = form.motivo_salida.value;
+        document.getElementById('preview-destino').textContent = form.destino.value;
+        document.getElementById('preview-observacion').textContent = form.observacion.value || 'Ninguna';
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
+        modal.show();
+    });
+
+    // Manejar la confirmación
+    document.getElementById('btnConfirmarSalida').addEventListener('click', function() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmacionModal'));
+        modal.hide();
+        form.submit();
+        setTimeout(function() {
+            window.location.href = "{{ url_for('index') }}";
+        }, 1000);
+    });
+});
+</script>
+{% endblock %} 

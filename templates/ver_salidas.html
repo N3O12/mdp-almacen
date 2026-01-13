@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">
+        <i class="fas fa-file-export"></i> Registro de Salidas de Materiales
+    </h2>
+
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Salidas Registradas</h5>
+                <a href="{{ url_for('descargar_salidas') }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-download"></i> Descargar Excel
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Solicitante</th>
+                            <th>DNI</th>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>U.M.</th>
+                            <th>Motivo</th>
+                            <th>Procedencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for salida in salidas %}
+                        <tr>
+                            <td>{{ salida[0].strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ salida[1] }}</td>
+                            <td>{{ salida[2] }}</td>
+                            <td>{{ salida[3] }}</td>
+                            <td>{{ salida[4] }}</td>
+                            <td>{{ "%.2f"|format(salida[5]) }}</td>
+                            <td>{{ salida[6] }}</td>
+                            <td>{{ salida[7] }}</td>
+                            <td>{{ salida[8] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
